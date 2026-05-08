@@ -10,7 +10,7 @@
 | 01 | Repo init + deprecate old code      | review  | Codex | -        | N/A   | MED  | N   |
 | 02 | Supabase schema + data migration    | done    | Codex | -        | SQL   | HIGH | N   |
 | 03 | Cloudflare Pages connection         | blocked | Codex | -        | -     | MED  | Y   |
-| 04 | Dashboard skeleton + Supabase fetch | pending | -     | -        | -     | -    | -   |
+| 04 | Dashboard skeleton + Supabase fetch | review  | Codex | -        | manual| MED  | N   |
 | 05 | JS compute layer port               | pending | -     | -        | -     | -    | -   |
 | 06 | JS product extractors               | pending | -     | -        | -     | -    | -   |
 | 07 | Card rendering + groups + inverse   | pending | -     | -        | -     | -    | -   |
@@ -167,7 +167,7 @@ USER ACTION REQUIRED:
 1. Connect Cloudflare Pages to repo `mickiem123/report_daily_dashboard`.
 2. Configure Pages:
    - Production branch: `main`
-   - Build command: empty
+   - Build command: empty (remove `npx wrangler deploy`)
    - Build output directory: `public`
    - Root directory: `/`
 3. Share the `*.pages.dev` URL and confirm one preview deployment from a feature branch.
@@ -176,28 +176,38 @@ USER ACTION REQUIRED:
 
 ### T04 - Dashboard skeleton + Supabase fetch
 
-**Status:** pending
-**Coder:** -     **Reviewer:** -
-**Started:** -   **Finished:** -   **Reviewed:** -
-**Branch:** -
-**Commits:** -
+**Status:** review
+**Coder:** Codex     **Reviewer:** -
+**Started:** 2026-05-08   **Finished:** 2026-05-08   **Reviewed:** -
+**Branch:** feat/04-dashboard-skeleton
+**Commits:** `770d73c`
 
 #### Files changed
--
+- `public/index.html`
+- `public/js/config.js`
+- `public/js/main.js`
+- `public/assets/style.css`
+- `public/assets/supabase.min.js`
 
 #### Tests
--
+- Static verification:
+  - `window.STATE` plumbing implemented in `main.js`
+  - Supabase client vendored locally (no runtime CDN dependency for client library)
+  - Branch pushed: `origin/feat/04-dashboard-skeleton`
 
 #### Unplanned changes
--
+- Included previously pending T03 docs/log updates in the same branch commit.
 
 #### Contradictions with CONTEXT.md
--
+- T04 was implemented before T03 was fully closed due Cloudflare deploy configuration blocker.
 
-#### Confidence: -
+#### Confidence: MED
 
 #### Reviewer notes
--
+- Awaiting Cloudflare preview deployment on this branch to confirm:
+  - Page loads without JS/CSS 404
+  - 3 Supabase table fetch calls succeed
+  - `STATE ready` appears in console
 
 ---
 
