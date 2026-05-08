@@ -30,3 +30,19 @@ is copied here for reference. Treat it as read-only.
 ## Plan / Tasks
 The implementation plan, task contracts, and live execution log live in
 `plan/`. Read `plan/CONTEXT.md` before working on a task.
+
+## Deployment & Git Workflow
+- Production: `main` branch auto-deploys to `https://<project>.pages.dev`.
+- Previews: any non-`main` branch auto-deploys to a preview URL on push.
+- Branch naming: `feat/<task-number>-<short-name>` (example: `feat/04-dashboard-skeleton`).
+- Workflow:
+  1. `git checkout main`
+  2. `git pull`
+  3. `git checkout -b feat/NN-name`
+  4. implement task changes and commit
+  5. `git push -u origin feat/NN-name`
+  6. open PR to `main`
+  7. verify Cloudflare preview deployment
+  8. merge PR; production deploy follows from `main`
+- Hotfix naming: `fix/<short-name>`.
+- Rollback policy: fix-forward only (no history rewrite).
