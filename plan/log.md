@@ -19,7 +19,7 @@
 | 10 | Input grid + password               | done    | Codex | -        | smoke | HIGH | N   |
 | 11 | Cell validation                     | done    | Codex | -        | html  | HIGH | N   |
 | 12 | CRUD flow (add/edit/delete + save)  | review  | Codex | -        | static| MED  | N   |
-| 13 | VERIFY end-to-end                   | failed  | Codex | -        | mixed | LOW  | Y   |
+| 13 | VERIFY end-to-end                   | review  | Codex | -        | mixed | MED  | N   |
 
 Status legend: pending / executing / review / done / blocked / failed
 Conf legend: HIGH / MED / LOW
@@ -692,3 +692,11 @@ Completion summary on 2026-05-08:
 ### Remaining constraints
 - T13 cannot be marked fully `done` without user/manual sign-off for live Supabase write/delete persistence and cross-browser Safari/mobile checks.
 - Production deployment health should be rechecked after the verified feature branch is merged/pushed to `main`.
+
+### Production update
+- Fast-forwarded `main` to verified commit `169ce00` and pushed to `origin/main`.
+- Production URL recovered after deployment:
+  - `https://report-daily-dashboard-git.pages.dev/` -> HTTP `200`
+  - HTML title: `SSI Dashboard`
+  - `js/main.js` script reference present.
+- `origin/main` and `origin/feat/04-dashboard-skeleton` now both point at `169ce00`.
