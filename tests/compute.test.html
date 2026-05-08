@@ -32,10 +32,17 @@
     });
 
     test("fmt percent", () => {
-      assertEq(fmt(0.0852, "%"), "8.52%");
+      assertEq(fmt(0.0852, "%"), "8,52%");
     });
     test("fmt ty", () => {
-      assertEq(fmt(1234.5, "tỷ"), "1,235 tỷ");
+      assertEq(fmt(1234.5, "tỷ"), "1.235 tỷ");
+    });
+    test("fmt ty tolerates legacy mojibake token", () => {
+      assertEq(fmt(1234.5, "tá»·"), "1.235 tỷ");
+    });
+    test("diff ty tolerates legacy mojibake token", () => {
+      const r = diff(1010, 1000, "tá»·");
+      assertEq(r.deltaStr, "(+10 tỷ, +1,00%)");
     });
     test("fmt null", () => {
       assertEq(fmt(null, "%"), "N/A");

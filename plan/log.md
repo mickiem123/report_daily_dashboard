@@ -10,15 +10,15 @@
 | 01 | Repo init + deprecate old code      | review  | Codex | -        | N/A   | MED  | N   |
 | 02 | Supabase schema + data migration    | done    | Codex | -        | SQL   | HIGH | N   |
 | 03 | Cloudflare Pages connection         | done    | Codex | -        | api   | HIGH | N   |
-| 04 | Dashboard skeleton + Supabase fetch | review  | Codex | -        | manual| MED  | N   |
-| 05 | JS compute layer port               | review  | Codex | -        | manual| MED  | N   |
-| 06 | JS product extractors               | review  | Codex | -        | html  | HIGH | N   |
-| 07 | Card rendering + groups + inverse   | review  | Codex | -        | html  | HIGH | N   |
-| 08 | 3-section page layout               | review  | Codex | -        | manual| HIGH | N   |
-| 09 | Refresh button + auto-daily         | review  | Codex | -        | manual| MED  | N   |
-| 10 | Input grid + password               | review  | Codex | -        | manual| HIGH | N   |
-| 11 | Cell validation                     | review  | Codex | -        | html  | HIGH | N   |
-| 12 | CRUD flow (add/edit/delete + save)  | review  | Codex | -        | manual| MED  | N   |
+| 04 | Dashboard skeleton + Supabase fetch | done    | Codex | -        | smoke | HIGH | N   |
+| 05 | JS compute layer port               | done    | Codex | -        | html  | HIGH | N   |
+| 06 | JS product extractors               | done    | Codex | -        | html  | HIGH | N   |
+| 07 | Card rendering + groups + inverse   | done    | Codex | -        | html  | HIGH | N   |
+| 08 | 3-section page layout               | done    | Codex | -        | smoke | HIGH | N   |
+| 09 | Refresh button + auto-daily         | done    | Codex | -        | smoke | HIGH | N   |
+| 10 | Input grid + password               | done    | Codex | -        | smoke | HIGH | N   |
+| 11 | Cell validation                     | done    | Codex | -        | html  | HIGH | N   |
+| 12 | CRUD flow (add/edit/delete + save)  | review  | Codex | -        | static| MED  | N   |
 | 13 | VERIFY end-to-end                   | failed  | Codex | -        | mixed | LOW  | Y   |
 
 Status legend: pending / executing / review / done / blocked / failed
@@ -622,3 +622,73 @@ Completion summary on 2026-05-08:
 ### Notes on T13
 - T13 is `failed` with `Esc=Y` per VERIFY failure handling; it is not in `review`.
 - Any resumed verification is blocked pending a planner-issued fix-forward task (VERIFY policy); no silent re-run was performed after failure.
+
+## New Session Handoff (2026-05-09)
+
+### Current branch and workspace
+- Branch: `feat/04-dashboard-skeleton`
+- Working tree status at handoff: modified files present for formatting fix review
+  - `public/js/compute.js`
+  - `tests/compute.test.html`
+
+### What was reviewed in this session
+- Re-reviewed post-fix formatting changes for `compute.js` and `compute.test.html`.
+- Confirmed VN numeric/percent formatting behavior in compute outputs:
+  - `fmt(0.0852, "%")` -> `8,52%`
+  - `fmt(1234.5, "tỷ")` -> `1.235 tỷ`
+- Confirmed diffs include separator conversion updates:
+  - `toLocaleString("en-US")` -> `toLocaleString("vi-VN")`
+  - percent decimal dot -> comma replacement in display strings.
+
+### Verification evidence captured
+- Local runtime probe output:
+  - `fmt%= 8,52%`
+  - `fmtTy= 1.235`
+  - `diffTy= (+10 KH, +10,00%)`
+  - `diffPct= (+2,00%)`
+- Production Pages URL check result:
+  - `https://report-daily-dashboard-git.pages.dev/` -> HTTP `404`
+  - Preview URL remained healthy earlier (`feat-04-dashboard-skeleton...pages.dev` returned `200` in prior check).
+
+### Reviewer findings snapshot
+1. High: Production deployment sanity failure still open (`T13 FAIL: I` remains unresolved).
+2. Medium: Unit-token brittleness risk remains in `compute.js` (`"tỷ"` branch matching can fail under encoding drift and fall through to `KH` label path).
+
+### T13 status context
+- T13 remains `failed` with escalation per VERIFY failure handling.
+- Numeric formatting issue (B) appears addressed in code under review, but T13 cannot be closed while production URL/deployment sanity (I) is still failing.
+
+### Recommended immediate next actions
+1. Resolve production deployment health for main URL (`report-daily-dashboard-git.pages.dev`) and re-check HTTP status/content.
+2. Harden unit handling in compute formatting to avoid string-encoding sensitivity (normalize unit keys / internal enum).
+3. Re-run T13 checklist items B and I, then update T13 entry and Decisions Log accordingly.
+
+## Completion Update (2026-05-09)
+
+### Fix-forward work completed
+- Hardened `public/js/compute.js` unit handling so both `tỷ` and the legacy mojibake token `tá»·` normalize to the same currency unit before formatting.
+- Added regression coverage in `tests/compute.test.html` for the legacy unit token in both `fmt()` and `diff()`.
+- Re-verified the prior review issues that were already present in the current working tree:
+  - `.hidden` hides `+ Thêm dòng` before auth (`display: none`).
+  - Existing grid rows lock `ngay` edits (`editable=false`), while new blank rows still allow `ngay` entry (`editable=true`).
+  - Two rapid Daily refresh clicks produce one `daily_metrics` fetch while the refresh lock is active.
+
+### Verification evidence
+- `node --check public/js/compute.js`
+- `node --check public/js/main.js`
+- `node --check public/js/grid.js`
+- `node --check public/js/validation.js`
+- `tests/compute.test.html`: `21 passed, 0 failed`
+- `tests/extractors.test.html`: `5 passed, 0 failed`
+- `tests/render.test.html`: `5 passed, 0 failed`
+- `tests/validation.test.html`: `5 passed, 0 failed`
+- Local dashboard smoke at `http://localhost:8765/public/index.html?v=3`:
+  - `STATE ready: {daily: 22, weekly: 2, monthly: 3}`
+  - 3 sections rendered with cards.
+  - VN numeric formatting observed (`8,98%`, `31.144 tỷ`, `(+5.543 tỷ, +21,65%)`).
+  - Preview deployment still healthy: `https://feat-04-dashboard-skeleton.report-daily-dashboard-git.pages.dev/` -> HTTP `200`.
+  - Production deployment before merge remains unhealthy: `https://report-daily-dashboard-git.pages.dev/` -> HTTP `404`.
+
+### Remaining constraints
+- T13 cannot be marked fully `done` without user/manual sign-off for live Supabase write/delete persistence and cross-browser Safari/mobile checks.
+- Production deployment health should be rechecked after the verified feature branch is merged/pushed to `main`.

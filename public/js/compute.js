@@ -9,15 +9,22 @@
     return v;
   }
 
+  function normalizeUnit(unit) {
+    if (unit === "tỷ" || unit === "tá»·") return "tỷ";
+    return unit;
+  }
+
   function fmt(v, unit) {
     const value = clean(v);
+    const normalizedUnit = normalizeUnit(unit);
     if (value === null) return "N/A";
-    if (unit === "%") return `${(value * 100).toFixed(2)}%`;
-    if (unit === "tỷ") return `${Math.round(value).toLocaleString("en-US")} tỷ`;
-    return `${Math.round(value).toLocaleString("en-US")}`;
+    if (normalizedUnit === "%") return `${(value * 100).toFixed(2).replace(".", ",")}%`;
+    if (normalizedUnit === "tỷ") return `${Math.round(value).toLocaleString("vi-VN")} tỷ`;
+    return `${Math.round(value).toLocaleString("vi-VN")}`;
   }
 
   function diff(today, prev, unit) {
+    const normalizedUnit = normalizeUnit(unit);
     const a = clean(today);
     const b = clean(prev);
     if (a === null || b === null) {
@@ -48,22 +55,22 @@
       prep = "về";
     }
 
-    if (unit === "%" && prep === "lên") prep = "lên mức";
-    if (unit === "%" && prep === "về") prep = "về mức";
+    if (normalizedUnit === "%" && prep === "lên") prep = "lên mức";
+    if (normalizedUnit === "%" && prep === "về") prep = "về mức";
 
     const sign = absDelta >= 0 ? "+" : "-";
     const absAbs = Math.abs(absDelta);
     let deltaStr = "";
-    if (unit === "%") {
-      deltaStr = `(${sign}${(absAbs * 100).toFixed(2)}%)`;
-    } else if (unit === "tỷ") {
-      deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("en-US")} tỷ, ${sign}${Math.abs(pctDelta).toFixed(2)}%)`;
+    if (normalizedUnit === "%") {
+      deltaStr = `(${sign}${(absAbs * 100).toFixed(2).replace(".", ",")}%)`;
+    } else if (normalizedUnit === "tỷ") {
+      deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} tỷ, ${sign}${Math.abs(pctDelta).toFixed(2).replace(".", ",")}%)`;
     } else {
-      const unitLabel = unit === "KH" || unit === "HĐ" || unit === "tài khoản" ? unit : "KH";
-      deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("en-US")} ${unitLabel}, ${sign}${Math.abs(pctDelta).toFixed(2)}%)`;
+      const unitLabel = normalizedUnit === "KH" || normalizedUnit === "HĐ" || normalizedUnit === "tài khoản" ? normalizedUnit : "KH";
+      deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} ${unitLabel}, ${sign}${Math.abs(pctDelta).toFixed(2).replace(".", ",")}%)`;
     }
 
-    return { verb, prep, valStr: fmt(a, unit), deltaStr, pctDelta };
+    return { verb, prep, valStr: fmt(a, normalizedUnit), deltaStr, pctDelta };
   }
 
   function median(xs) {
@@ -176,6 +183,7 @@
 
   window.compute = {
     clean,
+    normalizeUnit,
     fmt,
     diff,
     detectTrend,
