@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>compute tests</title>
+  <style>
+    body { background:#07080a; color:#e7e7e7; font-family:monospace; padding:24px; }
+    #results > div { margin:4px 0; }
+  </style>
+</head>
+<body>
+  <h1>compute.js tests</h1>
+  <div id="results"></div>
+
+  <script src="lib/test-runner.js"></script>
+  <script src="../public/js/compute.js"></script>
+  <script>
+    const { clean, fmt, diff, detectTrend, mad, robustZ, isManhDelta, metricHistory, weekdayVn } = window.compute;
+
+    test("clean nullish", () => {
+      assertEq(clean(null), null);
+      assertEq(clean(undefined), null);
+    });
+    test("clean rejects string", () => {
+      assertEq(clean("1"), null);
+    });
+    test("clean rejects sentinel", () => {
+      assertEq(clean(-2500000000), null);
+    });
+    test("clean keeps number", () => {
+      assertEq(clean(123.4), 123.4);
+    });
+
+    test("fmt percent", () => {
+      assertEq(fmt(0.0852, "%"), "8.52%");
+    });
+    test("fmt ty", () => {
+      assertEq(fmt(1234.5, "tỷ"), "1,235 tỷ");
+    });
+    test("fmt null", () => {
+      assertEq(fmt(null, "%"), "N/A");
+    });
+
+    test("diff increase", () => {
+      const r = diff(110, 100, "tỷ");
+      assertEq(r.verb, "tăng mạnh");
+    });
+    test("diff equal", () => {
+      const r = diff(100, 100, "tỷ");
+      assertEq(r.verb, "giữ nguyên mức");
+    });
+    test("diff percent prep", () => {
+      const r = diff(0.10, 0.08, "%");
+      assertEq(r.prep, "lên mức");
+    });
+
+    test("trend up streak", () => {
+      const rows = [{x:1},{x:2},{x:3},{x:4}];
+      assertEq(detectTrend("x", rows), "📈");
+    });
+    test("trend down streak", () => {
+      const rows = [{x:4},{x:3},{x:2},{x:1}];
+      assertEq(detectTrend("x", rows), "📉");
+    });
+    test("trend sudden drop", () => {
+      const rows = [{x:100},{x:100},{x:100},{x:80}];
+      assertEq(detectTrend("x", rows), "🔴");
+    });
+
+    test("mad simple", () => {
+      assertEq(mad([1,2,3,4,5]), 1);
+    });
+    test("robustZ zero mad", () => {
+      assertEq(robustZ(10, [5,5,5,5]), 0);
+    });
+    test("isManhDelta floor trigger", () => {
+      const h = Array.from({length: 20}, () => 100);
+      assertEq(isManhDelta(120, 100, h, { mode: "pct", floor: 15, k_sigma: 3 }), true);
+    });
+    test("metricHistory window", () => {
+      const rows = Array.from({length: 25}, (_, i) => ({x:i}));
+      const out = metricHistory("x", rows, 24);
+      assertEq(out.length, 21);
+    });
+    test("weekdayVn weekday", () => {
+      assertEq(weekdayVn("2024-09-09"), "T2");
+    });
+    test("weekdayVn weekend rolled", () => {
+      assertEq(weekdayVn("2024-09-08"), "T6");
+    });
+
+    window.runTests();
+  </script>
+</body>
+</html>
