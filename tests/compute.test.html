@@ -59,7 +59,7 @@
       assertEq(detectTrend("x", rows), "📈");
     });
     test("trend down streak", () => {
-      const rows = [{x:4},{x:3},{x:2},{x:1}];
+      const rows = [{x:4.0},{x:3.6},{x:3.2},{x:2.8}];
       assertEq(detectTrend("x", rows), "📉");
     });
     test("trend sudden drop", () => {

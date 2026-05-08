@@ -63,11 +63,61 @@ section h2 {
 }
 
 .section-actions button:hover { border-color: var(--accent-blue); }
+.hidden { display: none !important; }
 
 .content {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 16px;
+}
+
+.grid-wrap {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--bg-surface);
+  overflow-x: auto;
+}
+
+.tabulator {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.tabulator .tabulator-header,
+.tabulator .tabulator-row {
+  background: var(--bg-surface);
+}
+
+.tabulator-cell.cell-error {
+  background: rgba(255, 99, 99, 0.2);
+  outline: 1px solid var(--accent-red);
+}
+
+.tabulator-cell.cell-warn {
+  background: rgba(255, 188, 51, 0.2);
+  outline: 1px solid var(--accent-yellow);
+}
+
+.tabulator-cell.cell-outlier {
+  background: rgba(85, 179, 255, 0.2);
+  outline: 1px solid var(--accent-blue);
+}
+
+.delete-row-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
+.delete-row-btn:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
 }
 
 .placeholder {

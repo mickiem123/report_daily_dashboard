@@ -5,42 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SSI Dashboard</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/tabulator.min.css" />
 </head>
 <body>
   <header>
-    <h1 style="margin: 0">SSI Bao Cao</h1>
+    <h1 style="margin: 0">SSI Báo Cáo</h1>
     <p style="margin: 4px 0 0; color: var(--text-muted)">Live dashboard</p>
   </header>
 
   <section id="daily" data-mode="daily">
     <div class="section-header">
-      <h2>Bao cao ngay <span class="period-label">...</span></h2>
-      <div class="section-actions"></div>
+      <h2>Báo cáo ngày <span class="period-label">...</span></h2>
+      <div class="section-actions">
+        <button type="button" class="add-row-btn hidden" data-mode="daily">+ Thêm dòng</button>
+        <button type="button" class="entry-btn" data-mode="daily">Nhập liệu</button>
+      </div>
     </div>
     <div class="content"><div class="loading">...</div></div>
+    <div class="grid-wrap" id="grid-wrap-daily" hidden>
+      <div id="grid-daily"></div>
+    </div>
   </section>
 
   <section id="weekly" data-mode="weekly">
     <div class="section-header">
-      <h2>Bao cao tuan <span class="period-label">...</span></h2>
-      <div class="section-actions"></div>
+      <h2>Báo cáo tuần <span class="period-label">...</span></h2>
+      <div class="section-actions">
+        <button type="button" class="add-row-btn hidden" data-mode="weekly">+ Thêm dòng</button>
+        <button type="button" class="entry-btn" data-mode="weekly">Nhập liệu</button>
+      </div>
     </div>
     <div class="content"><div class="loading">...</div></div>
+    <div class="grid-wrap" id="grid-wrap-weekly" hidden>
+      <div id="grid-weekly"></div>
+    </div>
   </section>
 
   <section id="monthly" data-mode="monthly">
     <div class="section-header">
-      <h2>Bao cao thang <span class="period-label">...</span></h2>
-      <div class="section-actions"></div>
+      <h2>Báo cáo tháng <span class="period-label">...</span></h2>
+      <div class="section-actions">
+        <button type="button" class="add-row-btn hidden" data-mode="monthly">+ Thêm dòng</button>
+        <button type="button" class="entry-btn" data-mode="monthly">Nhập liệu</button>
+      </div>
     </div>
     <div class="content"><div class="loading">...</div></div>
+    <div class="grid-wrap" id="grid-wrap-monthly" hidden>
+      <div id="grid-monthly"></div>
+    </div>
   </section>
 
   <script src="assets/supabase.min.js"></script>
+  <script src="assets/tabulator.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/compute.js"></script>
+  <script src="js/validation.js"></script>
   <script src="js/extractors.js"></script>
   <script src="js/render.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/grid.js"></script>
 </body>
 </html>
