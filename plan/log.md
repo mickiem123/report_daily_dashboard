@@ -8,7 +8,7 @@
 | #  | Task                                | Status  | Coder | Reviewer | Tests | Conf | Esc |
 |----|-------------------------------------|---------|-------|----------|-------|------|-----|
 | 01 | Repo init + deprecate old code      | review  | Codex | -        | N/A   | MED  | N   |
-| 02 | Supabase schema + data migration    | blocked | Codex | -        | N/A   | MED  | Y   |
+| 02 | Supabase schema + data migration    | done    | Codex | -        | SQL   | HIGH | N   |
 | 03 | Cloudflare Pages connection         | pending | -     | -        | -     | -    | -   |
 | 04 | Dashboard skeleton + Supabase fetch | pending | -     | -        | -     | -    | -   |
 | 05 | JS compute layer port               | pending | -     | -        | -     | -    | -   |
@@ -80,44 +80,56 @@ USER ACTION REQUIRED:
 
 ### T02 - Supabase schema + data migration
 
-**Status:** blocked
+**Status:** done
 **Coder:** Codex     **Reviewer:** -
-**Started:** 2026-05-08   **Finished:** -   **Reviewed:** -
+**Started:** 2026-05-08   **Finished:** 2026-05-08   **Reviewed:** -
 **Branch:** main
-**Commits:** `feat: supabase schema + env example`
+**Commits:** `feat: supabase schema + env example`; `chore: finalize import pipeline and remove deprecated columns`
 
 #### Files changed
 - `supabase_schema.sql`
 - `.env.example`
 - `README.md`
+- `scripts/clean_excel_for_supabase.py`
+- `data/daily_metrics_clean.csv`
+- `data/weekly_metrics_clean.csv`
+- `data/monthly_metrics_clean.csv`
 
 #### Tests
-N/A locally. Supabase execution and row-count checks require user project access.
+Supabase SQL checks passed:
+- `daily_metrics`: 79 rows
+- `weekly_metrics`: 2 rows
+- `monthly_metrics`: 3 rows
+- RLS enabled on all 3 tables
 
 #### Unplanned changes
 - Wrote the 3 tables explicitly instead of using `LIKE ... INCLUDING ALL` to avoid copied-constraint rename issues in Supabase/Postgres.
 - Added explicit `GRANT` statements for `anon` and `authenticated` roles so API access does not depend on dashboard defaults.
+- Dropped deprecated columns across all tables: `du_no_ssi_deprecated`, `slhd_ps_deprecated`, `slhd_dplus_deprecated`.
+- Built a cleaner script to normalize date/number/error cells and regenerate import-ready CSV files.
 
 #### Contradictions with CONTEXT.md
 - `CONTEXT.md` says `config.js` may be committed with anon credentials later. Task 02 stops at `.env.example`; no frontend config file was created yet.
 
 #### Confidence: MED
+#### Confidence: HIGH
 
 #### Reviewer notes
-USER ACTION REQUIRED:
-1. Create a Supabase project at https://supabase.com
-2. Open SQL Editor and run `supabase_schema.sql`
-3. Copy the project URL and anon key into local `.env`
-4. Paste Excel data into:
-   `daily_data.xlsx` -> `daily_metrics`
-   `weekly_data.xlsx` -> `weekly_metrics`
-   `monthly_data.xlsx` -> `monthly_metrics`
-5. Keep `ngay` as `YYYY-MM-DD`
-6. Keep percentage cells as decimals such as `0.0852`
-7. Confirm row counts:
-   `select count(*) from daily_metrics;`
-   `select count(*) from weekly_metrics;`
-   `select count(*) from monthly_metrics;`
+Completion summary on 2026-05-08:
+- Project `report_dashboard` is active.
+- `public.daily_metrics`, `public.weekly_metrics`, and `public.monthly_metrics` exist.
+- RLS is enabled on all 3 tables.
+- Deprecated columns were removed from all 3 tables.
+- Row counts after import:
+  - `daily_metrics`: `79`
+  - `weekly_metrics`: `2`
+  - `monthly_metrics`: `3`
+- Local `.env` is configured with project URL + publishable key.
+- Import artifacts for reproducibility:
+  - `data/daily_metrics_clean.csv`
+  - `data/weekly_metrics_clean.csv`
+  - `data/monthly_metrics_clean.csv`
+  - `scripts/clean_excel_for_supabase.py`
 
 ---
 
