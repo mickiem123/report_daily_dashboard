@@ -19,7 +19,7 @@
 | 10 | Input grid + password               | review  | Codex | -        | manual| HIGH | N   |
 | 11 | Cell validation                     | review  | Codex | -        | html  | HIGH | N   |
 | 12 | CRUD flow (add/edit/delete + save)  | review  | Codex | -        | manual| MED  | N   |
-| 13 | VERIFY end-to-end                   | review  | Codex | -        | mixed | MED  | Y   |
+| 13 | VERIFY end-to-end                   | failed  | Codex | -        | mixed | LOW  | Y   |
 
 Status legend: pending / executing / review / done / blocked / failed
 Conf legend: HIGH / MED / LOW
@@ -451,39 +451,78 @@ Completion summary on 2026-05-08:
 
 ### T13 - VERIFY end-to-end
 
-**Status:** review
+**Status:** failed
 **Coder:** Codex     **Reviewer:** -
 **Started:** 2026-05-08   **Finished:** 2026-05-08   **Reviewed:** -
 **Branch:** feat/04-dashboard-skeleton
 **Commits:** -
 
 #### Files changed
-- `tests/compute.test.html` (down-streak case adjusted to avoid sudden-drop precedence conflict)
+- `plan/log.md`
 
 #### Tests
-- Local unit pages:
+- A. Unit pages: PASS
   - `tests/compute.test.html` -> `19 passed, 0 failed`
   - `tests/extractors.test.html` -> `5 passed, 0 failed`
   - `tests/render.test.html` -> `5 passed, 0 failed`
   - `tests/validation.test.html` -> `5 passed, 0 failed`
-- Local dashboard smoke:
-  - 3 sections rendered with period labels
-  - card order, group labels, refresh/input/add-row buttons present
+- B. Static dashboard render: FAIL
+  - Preview URL loaded with 3 sections and 6 cards/section.
+  - Detail toggles work, M+ and D+ groups render, inverse KH cancel D+ behavior observed.
+  - Numeric format does not match VERIFY expectation example (`1.234,5 tỷ`, `8,52%`); observed format is `31,144 tỷ`, `8.98%`.
+- C. Refresh flow: PARTIAL
+  - Confirm dialog shown; cancel path showed 0 fetch calls in instrumentation.
+  - Rapid double-click simulation produced one refresh fetch while lock active.
+  - Explicit network-blocked UI error banner check is pending (non-deterministic in this run).
+- D. Auth + grid: PARTIAL
+  - Wrong password blocks open (`Sai mật khẩu`), correct password `123` opens grid.
+  - Re-click closes grid without second prompt.
+  - Per-section auth verified by separate weekly prompt + session key.
+  - Frozen `ngay` column and frozen header structure observed; empty bottom row present.
+  - Reload keeps grid closed by default while session key may persist.
+- E. Cell validation: PARTIAL
+  - Validation logic checks executed through `window.validation.validateCell`:
+    - non-number => error
+    - percent range >1 => warn
+    - negative count => warn
+    - outlier z-score case => outlier
+    - bad date format => error
+  - Full DOM border/tooltip/revert behavior for every case remains pending manual interaction.
+- F. CRUD save flow: PENDING
+  - Debounce/save logic and `onConflict: 'ngay'` path verified in code.
+  - Live Supabase Table Editor persistence checks require manual/external confirmation.
+- G. Cards reflect writes: PENDING
+  - Requires real write + post-save card re-render confirmation against live data.
+- H. Cross-browser smoke: PARTIAL
+  - Chromium/agent-browser checks run.
+  - Safari desktop and mobile browser checks pending manual execution.
+- I. Git & deployment workflow sanity: FAIL/PARTIAL
+  - Cloudflare Pages production URL `https://report-daily-dashboard-git.pages.dev/` returned `Deployment Not Found` during this verification.
+  - Preview deployments for feature branch exist and complete quickly (seconds).
+  - PR preview-link visibility in GitHub PR checks/comments pending manual verification.
+- J. Repo hygiene: PARTIAL
+  - `deprecated/` exists with old Python tool files.
+  - `.gitignore` contains `.env`, `node_modules/`, `*.pyc`.
+  - `.env.example` contains required keys (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `WRITE_PASSWORD`).
+  - `README.md` fresh-clone accuracy and `supabase_schema.sql` clean run on fresh project pending manual verification.
 
 #### Unplanned changes
-- Could not fully execute all DB-write and cross-browser checklist items in automated mode.
+- Production Pages URL check surfaced deployment state issue (`Deployment Not Found`).
 
 #### Contradictions with CONTEXT.md
-- Final user-signoff checks in VERIFY remain outstanding (explicit user interaction required).
+- User-signoff items in VERIFY remain pending by design (manual-only).
 
-#### Confidence: MED
+#### Confidence: LOW
 
 #### Reviewer notes
-- Escalation remains `Y` for T13 until manual live checks (CRUD persistence and user sign-off) are completed.
+- T13 marked `failed` per VERIFY failure policy due checklist failures in B (numeric format) and I (production URL/deployment sanity).
+- Manual sign-off items remain pending and are not marked complete.
 
 ---
 
 ## Decisions Log
+- T13 FAIL: B numeric formatting check — cards render `8.98%` and `31,144 tỷ` instead of VERIFY style examples like `8,52%` and `1.234,5 tỷ` — formatting in compute/render path is using `en-US` separators and dot decimals.
+- T13 FAIL: I production deployment sanity check — production URL `https://report-daily-dashboard-git.pages.dev/` returned `Deployment Not Found` during verification — production deployment state is not healthy/current for sign-off.
 - T01: Current workspace root was used as the repo root by user request to execute the plan "here".
 - 2026-05-08 T03/T04 infra finding: Cloudflare project is currently configured in Worker-style deploy mode and requires a deploy command. Using `npx wrangler deploy` fails static deployment detection.
 - 2026-05-08 Cloudflare deploy test result:
@@ -581,23 +620,5 @@ Completion summary on 2026-05-08:
 5. Commit and push once clean.
 
 ### Notes on T13
-- T13 remains `review` with `Esc=Y` because DB-coupled CRUD persistence and user sign-off checks are not fully closed in this session.
-- Manual/live Supabase verification by user or next agent is still required for final `done`.
-
-### Resume update (2026-05-08)
-
-- Continued from latest subagent handoff block.
-- Fixed P1 add-row gate by adding .hidden { display: none !important; }.
-- Fixed P1 duplicate-key risk by locking 
-gay edits for existing rows (__lockedNgay) while keeping new rows editable.
-- Fixed P2 refresh race by adding per-section refresh lock and disabling refresh button immediately at click start.
-- Normalized Vietnamese UI strings in public/index.html, public/js/main.js, public/js/grid.js to UTF-8 text.
-- Verification run:
-  - 
-ode --check public/js/main.js
-  - 
-ode --check public/js/grid.js
-  - 
-ode --check public/js/validation.js
-- Remaining for T13 closure: live DB-coupled CRUD verification + user sign-off checklist on deployed environment.
-
+- T13 is `failed` with `Esc=Y` per VERIFY failure handling; it is not in `review`.
+- Any resumed verification is blocked pending a planner-issued fix-forward task (VERIFY policy); no silent re-run was performed after failure.
