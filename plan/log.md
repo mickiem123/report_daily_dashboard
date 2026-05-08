@@ -9,7 +9,7 @@
 |----|-------------------------------------|---------|-------|----------|-------|------|-----|
 | 01 | Repo init + deprecate old code      | review  | Codex | -        | N/A   | MED  | N   |
 | 02 | Supabase schema + data migration    | done    | Codex | -        | SQL   | HIGH | N   |
-| 03 | Cloudflare Pages connection         | blocked | Codex | -        | -     | MED  | Y   |
+| 03 | Cloudflare Pages connection         | done    | Codex | -        | api   | HIGH | N   |
 | 04 | Dashboard skeleton + Supabase fetch | review  | Codex | -        | manual| MED  | N   |
 | 05 | JS compute layer port               | review  | Codex | -        | manual| MED  | N   |
 | 06 | JS product extractors               | review  | Codex | -        | html  | HIGH | N   |
@@ -135,42 +135,35 @@ Completion summary on 2026-05-08:
 
 ### T03 - Cloudflare Pages connection
 
-**Status:** blocked
+**Status:** done
 **Coder:** Codex     **Reviewer:** -
-**Started:** 2026-05-08   **Finished:** -   **Reviewed:** -
-**Branch:** main
-**Commits:** -
+**Started:** 2026-05-08   **Finished:** 2026-05-08   **Reviewed:** -
+**Branch:** feat/04-dashboard-skeleton
+**Commits:** `1e0e71a`
 
 #### Files changed
 - `README.md`
 
 #### Tests
-- `git remote -v` checked: no remote configured (blocked precondition)
+- Cloudflare Pages API check (`GET /accounts/{account_id}/pages/projects`) confirms:
+  - Project: `report-daily-dashboard-git`
+  - Repo source: `mickiem123/report_daily_dashboard`
+  - Build config: `build_command=""`, `destination_dir="public"`, `root_dir="/"`
+  - Latest preview deployment status: `success`
+  - Trigger branch: `feat/04-dashboard-skeleton`
+  - Deployment URL: `https://752a3a27.report-daily-dashboard-git.pages.dev`
+  - Branch alias URL: `https://feat-04-dashboard-skeleton.report-daily-dashboard-git.pages.dev`
 
 #### Unplanned changes
-- Completed documentation-only portion of T03 (`README.md`) before infra connection.
+- Previous blocked state came from Wrangler token permission error (`code: 10000`) on direct CLI deploy path; project is now using Pages Git integration with successful preview deployment.
 
 #### Contradictions with CONTEXT.md
 -
 
-#### Confidence: -
-#### Confidence: MED
+#### Confidence: HIGH
 
 #### Reviewer notes
-- GitHub remote + initial push are now complete.
-- Local verification on 2026-05-08:
-  - Current branch: `main`
-  - `origin` configured and reachable
-  - `main` pushed to `origin/main` and set as upstream
-
-USER ACTION REQUIRED:
-1. Connect Cloudflare Pages to repo `mickiem123/report_daily_dashboard`.
-2. Configure Pages:
-   - Production branch: `main`
-   - Build command: empty (remove `npx wrangler deploy`)
-   - Build output directory: `public`
-   - Root directory: `/`
-3. Share the `*.pages.dev` URL and confirm one preview deployment from a feature branch.
+- T03 unblock criteria satisfied on 2026-05-08 with live Pages Git project and successful preview deployment from feature branch.
 
 ---
 
