@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>render tests</title>
+  <style>body{background:#07080a;color:#e7e7e7;font-family:monospace;padding:24px}#results>div{margin:4px 0}</style>
+</head>
+<body>
+  <h1>render.js tests</h1>
+  <div id="results"></div>
+  <script src="lib/test-runner.js"></script>
+  <script src="../public/js/compute.js"></script>
+  <script src="fixtures/sample-rows.js"></script>
+  <script src="../public/js/extractors.js"></script>
+  <script src="../public/js/render.js"></script>
+  <script>
+    const F = window.fixtures;
+    const R = window.render;
+    const E = window.extractors;
+
+    test("card: contains product-card", () => {
+      const html = R.card(E.hose(F.fullRow, F.prevRow, F.fullHistory), 0);
+      assert(typeof html === "string");
+      assert(html.includes("product-card"));
+      assert(html.includes('data-key="hose"'));
+    });
+
+    test("card: M+ group rendered", () => {
+      const html = R.card(E.margin(F.fullRow, F.prevRow, F.fullHistory), 0);
+      assert(html.includes('class="group-label">M+'));
+    });
+
+    test("card: D+ group rendered", () => {
+      const html = R.card(E.phaisinh(F.fullRow, F.prevRow, F.fullHistory), 0);
+      assert(html.includes('class="group-label">D+'));
+    });
+
+    test("inverse positive -> down class", () => {
+      const html = R.card({
+        key: "x",
+        name: "X",
+        trend_emoji: "",
+        headline_label: "h",
+        headline_value: "1",
+        headline_delta: "(+1)",
+        verb: "tang",
+        sub_metrics: [{ label: "Cancel", value: "10", delta: "(+5)", inverse: true }],
+      }, 0);
+      assert(html.includes('class="metric-delta down">'));
+    });
+
+    test("sortProducts: tang > giu > giam", () => {
+      const sorted = R.sortProducts([
+        { key: "scash", verb: "giam" },
+        { key: "hose", verb: "tang" },
+        { key: "margin", verb: "giu nguyen muc" },
+      ]);
+      assertEq(sorted.map((x) => x.key), ["hose", "margin", "scash"]);
+    });
+
+    window.runTests();
+  </script>
+</body>
+</html>

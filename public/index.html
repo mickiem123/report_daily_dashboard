@@ -12,27 +12,35 @@
     <p style="margin: 4px 0 0; color: var(--text-muted)">Live dashboard</p>
   </header>
 
-  <section id="daily">
-    <h2>Bao cao ngay</h2>
-    <div class="section-actions"></div>
+  <section id="daily" data-mode="daily">
+    <div class="section-header">
+      <h2>Bao cao ngay <span class="period-label">...</span></h2>
+      <div class="section-actions"></div>
+    </div>
     <div class="content"><div class="loading">...</div></div>
   </section>
 
-  <section id="weekly">
-    <h2>Bao cao tuan</h2>
-    <div class="section-actions"></div>
+  <section id="weekly" data-mode="weekly">
+    <div class="section-header">
+      <h2>Bao cao tuan <span class="period-label">...</span></h2>
+      <div class="section-actions"></div>
+    </div>
     <div class="content"><div class="loading">...</div></div>
   </section>
 
-  <section id="monthly">
-    <h2>Bao cao thang</h2>
-    <div class="section-actions"></div>
+  <section id="monthly" data-mode="monthly">
+    <div class="section-header">
+      <h2>Bao cao thang <span class="period-label">...</span></h2>
+      <div class="section-actions"></div>
+    </div>
     <div class="content"><div class="loading">...</div></div>
   </section>
 
   <script src="assets/supabase.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/compute.js"></script>
+  <script src="js/extractors.js"></script>
+  <script src="js/render.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

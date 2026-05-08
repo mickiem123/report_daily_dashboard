@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>extractors tests</title>
+  <style>body{background:#07080a;color:#e7e7e7;font-family:monospace;padding:24px}#results>div{margin:4px 0}</style>
+</head>
+<body>
+  <h1>extractors.js tests</h1>
+  <div id="results"></div>
+  <script src="lib/test-runner.js"></script>
+  <script src="../public/js/compute.js"></script>
+  <script src="fixtures/sample-rows.js"></script>
+  <script src="../public/js/extractors.js"></script>
+  <script>
+    const F = window.fixtures;
+    const E = window.extractors;
+
+    test("hose: canonical shape", () => {
+      const p = E.hose(F.fullRow, F.prevRow, F.fullHistory);
+      assertEq(p.key, "hose");
+      assert(Array.isArray(p.sub_metrics));
+      assert(typeof p.headline_value === "string");
+    });
+
+    test("margin: M+ grouped", () => {
+      const p = E.margin(F.fullRow, F.prevRow, F.fullHistory);
+      const grouped = p.sub_metrics.filter((s) => s.group === "M+");
+      assert(grouped.length >= 6, `expected >=6, got ${grouped.length}`);
+    });
+
+    test("phaisinh: D+ grouped + inverse", () => {
+      const p = E.phaisinh(F.fullRow, F.prevRow, F.fullHistory);
+      const grouped = p.sub_metrics.filter((s) => s.group === "D+");
+      assert(grouped.length >= 8, `expected >=8, got ${grouped.length}`);
+      const cancel = p.sub_metrics.find((s) => s.label === "KH cancel D+");
+      assert(!!cancel, "missing KH cancel D+");
+      assertEq(cancel.inverse, true);
+    });
+
+    test("partial row: no crash", () => {
+      const names = ["hose", "margin", "phaisinh", "scash", "sfund", "momoi"];
+      names.forEach((name) => {
+        const p = E[name](F.partialRow, null, [F.partialRow]);
+        assertEq(p.key, name);
+      });
+    });
+
+    test("null row: no crash", () => {
+      const names = ["hose", "margin", "phaisinh", "scash", "sfund", "momoi"];
+      names.forEach((name) => {
+        const p = E[name](F.nullRow, null, [F.nullRow]);
+        assertEq(p.key, name);
+        assert(Array.isArray(p.sub_metrics));
+      });
+    });
+
+    window.runTests();
+  </script>
+</body>
+</html>
