@@ -44,6 +44,10 @@ body {
   .bg-drift {
     animation: drift 90s linear infinite;
   }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
