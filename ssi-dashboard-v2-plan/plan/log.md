@@ -4,8 +4,8 @@
 
 | #   | Task                                                     | Status   | Coder | Reviewer | Tests | Conf | Esc |
 |-----|----------------------------------------------------------|----------|-------|----------|-------|------|-----|
-| T01 | Bootstrap agent protocol files                          | review   | Codex |          | hash  | H    | N   |
-| T02 | Scaffold Vite + React + TS + Tailwind + shadcn + tokens | pending  |       |          |       |      |     |
+| T01 | Bootstrap agent protocol files                          | done     | Codex | Codex    | hash  | H    | N   |
+| T02 | Scaffold Vite + React + TS + Tailwind + shadcn + tokens | review   | Codex |          | build | H    | N   |
 | T03 | TypeScript contract + mock fixture                      | pending  |       |          |       |      |     |
 | T04 | Port compute logic to TS with Vitest TDD                | pending  |       |          |       |      |     |
 | T05 | Port extractors + validation to TS with Vitest TDD      | pending  |       |          |       |      |     |
@@ -32,30 +32,30 @@
 
 - Started: 2026-05-09T11:13:05+07:00
 - Finished: 2026-05-09T11:16:40+07:00
-- Reviewed:
+- Reviewed: 2026-05-09T11:22:06+07:00
 - Branch: feat/v2-react-rewrite
-- Commits: pending
+- Commits: 6f46cfc
 - Files: ssi-dashboard-v2-plan/CLAUDE.md, ssi-dashboard-v2-plan/.cursorrules, ssi-dashboard-v2-plan/plan/log.md
 - Tests: SHA256 equality check passed across CLAUDE.md, AGENTS.md, .cursorrules
 - Unplanned: Created `/CLAUDE.md` from existing `/AGENTS.md` to satisfy missing pre-condition, then generated `/.cursorrules` from `/CLAUDE.md`.
 - Contradictions: Planner-authored `/CLAUDE.md` was missing; used existing `/AGENTS.md` as canonical protocol source.
 - Confidence: H
 - Notes: T01 deliverable files are byte-identical and ready for merge.
-- Reviewer notes:
+- Reviewer notes: Approved and merged to feat/v2-react-rewrite with --no-ff.
 
 ## T02 — Scaffold Vite + React + TS + Tailwind + shadcn + tokens
 
-- Started:
-- Finished:
+- Started: 2026-05-09T11:17:10+07:00
+- Finished: 2026-05-09T11:22:06+07:00
 - Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
+- Branch: feature/T02-scaffold-vite
+- Commits: pending
+- Files: package.json, package-lock.json, tsconfig.json, tsconfig.app.json, vite.config.ts, tailwind.config.ts, postcss.config.js, components.json, vitest.config.ts, tests/setup.ts, src/main.tsx, src/App.tsx, src/styles/globals.css, src/lib/utils.ts, src/components/ui/*
+- Tests: npm run typecheck (pass), npm run build (pass)
+- Unplanned: create-vite in-place was canceled due non-empty directory, scaffold generated via temporary folder and merged manually to preserve plan/ and protocol files.
+- Contradictions: Task requested shadcn CLI init/add; preflight failed before alias/tailwind setup, so equivalent shadcn structure and primitives were created directly.
+- Confidence: H
+- Notes: Foundation scaffold complete and ready for T03 contract/fixtures.
 - Reviewer notes:
 
 ## T03 — TypeScript contract + mock fixture
