@@ -59,19 +59,16 @@ export function diff(
 
   const sign = absDelta >= 0 ? "+" : "-";
   const absAbs = Math.abs(absDelta);
-  let deltaStr = "";
-  if (normalizedUnit === "%") {
-    deltaStr = `(${sign}${(absAbs * 100).toFixed(2).replace(".", ",")}%)`;
-  } else if (normalizedUnit === "tỷ") {
-    deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} tỷ, ${sign}${Math.abs(pctDelta)
-      .toFixed(2)
-      .replace(".", ",")}%)`;
-  } else {
-    const unitLabel = normalizedUnit === "KH" || normalizedUnit === "HĐ" || normalizedUnit === "tài khoản" ? normalizedUnit : "KH";
-    deltaStr = `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} ${unitLabel}, ${sign}${Math.abs(pctDelta)
-      .toFixed(2)
-      .replace(".", ",")}%)`;
-  }
+  const deltaStr =
+    normalizedUnit === "%"
+      ? `(${sign}${(absAbs * 100).toFixed(2).replace(".", ",")}%)`
+      : normalizedUnit === "tỷ"
+        ? `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} tỷ, ${sign}${Math.abs(pctDelta)
+            .toFixed(2)
+            .replace(".", ",")}%)`
+        : `(${sign}${Math.round(absAbs).toLocaleString("vi-VN")} ${
+            normalizedUnit === "KH" || normalizedUnit === "HĐ" || normalizedUnit === "tài khoản" ? normalizedUnit : "KH"
+          }, ${sign}${Math.abs(pctDelta).toFixed(2).replace(".", ",")}%)`;
 
   return { verb, prep, valStr: fmt(a, normalizedUnit), deltaStr, pctDelta };
 }
