@@ -11,20 +11,22 @@
 | T05 | Port extractors + validation to TS with Vitest TDD      | done     | Codex | Codex    | test  | H    | N   |
 | T06 | Supabase client + TanStack Query data layer             | done     | Codex | Codex    | test  | H    | N   |
 | T07 | Background pattern component (dots + fade + drift)      | done     | Codex | Codex    | test  | H    | N   |
-| T08 | Hero landing component                                  | pending  |       |          |       |      |     |
-| T09 | Layout shell + glass pill tabs                          | pending  |       |          |       |      |     |
-| T10 | Card front face                                         | pending  |       |          |       |      |     |
-| T11 | Card back face + 3D flip                                | pending  |       |          |       |      |     |
-| T12 | Section render + states + first-mount choreography      | pending  |       |          |       |      |     |
-| T13 | Modal shell                                             | pending  |       |          |       |      |     |
-| T14 | DataTable in modal + cell validation UI                 | pending  |       |          |       |      |     |
-| T15 | CRUD: upsert/delete/add row + debounce + toast          | pending  |       |          |       |      |     |
-| T16 | Refresh flow                                            | pending  |       |          |       |      |     |
+| T08 | Hero landing component                                  | done     | Codex | Codex    | test  | H    | N   |
+| T09 | Layout shell + glass pill tabs                          | done     | Codex | Codex    | test  | H    | N   |
+| T10 | Card front face                                         | done     | Codex | Codex    | test  | H    | N   |
+| T11 | Card back face + 3D flip                                | done     | Codex | Codex    | test  | H    | N   |
+| T12 | Section render + states + first-mount choreography      | done     | Codex | Codex    | test  | H    | N   |
+| T13 | Modal shell                                             | done     | Codex | Codex    | test  | H    | N   |
+| T14 | DataTable in modal + cell validation UI                 | done     | Codex | Codex    | test  | H    | N   |
+| T15 | CRUD: upsert/delete/add row + debounce + toast          | done     | Codex | Codex    | test  | H    | N   |
+| T16 | Refresh flow                                            | done     | Codex | Codex    | test  | H    | N   |
 | T17 | New Cloudflare Pages project + deploy                   | pending  |       |          |       |      |     |
 | T18 | VERIFY end-to-end                                       | pending  |       |          |       |      |     |
 
 ## Decisions Log
 <coordinator-only. cross-task decisions, plan-wide notes, escalations resolved>
+
+- 2026-05-09T16:50:19+07:00 — User-approved visual direction change: replace legacy teal drift background with animated path-based background (`BgPattern`) and continue using shadcn UI primitives for interactive elements.
 
 ---
 
@@ -135,138 +137,138 @@
 
 ## T08 — Hero landing component
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T16:23:22+07:00
+- Finished: 2026-05-09T16:50:19+07:00
+- Reviewed: 2026-05-09T16:50:19+07:00
+- Branch: feature/T08-hero-landing
+- Commits: 2e4e144
+- Files: src/components/Hero.tsx, src/App.tsx, tests/hero.smoke.test.tsx
+- Tests: npm run test (pass, 8 files / 69 tests), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: Root-level stray file `src/components/Hero.tsx` from failed subagent run was removed (outside project scope, untracked).
+- Contradictions: None.
+- Confidence: H
+- Notes: Unlock flow now renders dashboard layout placeholder (`Section: daily`) instead of static placeholder text to match T09 integration.
+- Reviewer notes: Approved after full suite verification.
 
 ## T09 — Layout shell + glass pill tabs
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T16:23:22+07:00
+- Finished: 2026-05-09T16:50:19+07:00
+- Reviewed: 2026-05-09T16:50:19+07:00
+- Branch: feature/T09-layout-tabs
+- Commits: 2e4e144
+- Files: src/components/Tabs.tsx, src/components/Layout.tsx, src/components/ui/tabs.tsx, tests/tabs.smoke.test.tsx, src/App.tsx
+- Tests: npm run test (pass, 8 files / 69 tests), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: `src/components/ui/tabs.tsx` updated for stable trigger registration and keyboard flow; App integration line updated centrally after parallel execution.
+- Contradictions: None.
+- Confidence: H
+- Notes: Tabs are instant-switch and keyboard navigable (`ArrowRight/Left`, Home/End), active tab remains singular.
+- Reviewer notes: Approved after integration review.
 
 ## T10 — Card front face
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T16:23:22+07:00
+- Finished: 2026-05-09T16:50:19+07:00
+- Reviewed: 2026-05-09T16:50:19+07:00
+- Branch: feature/T10-card-front
+- Commits: 2e4e144
+- Files: src/components/Card.tsx, src/lib/status.ts, tests/card.test.tsx
+- Tests: npm run test (pass, 8 files / 69 tests), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: None.
+- Contradictions: None.
+- Confidence: H
+- Notes: Front-face only (no flip state), subtle status aura, inverse delta color logic covered by tests.
+- Reviewer notes: Approved after full suite verification.
 
 ## T11 — Card back face + 3D flip
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:00:00+07:00
+- Finished: 2026-05-09T17:20:00+07:00
+- Reviewed: 2026-05-09T17:22:00+07:00
+- Branch: feature/T11-card-flip
+- Commits: 2e4e144
+- Files: src/components/Card.tsx, src/components/CardBack.tsx, src/styles/globals.css, tests/card-flip.test.tsx
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: Initial pass required rework after spec/quality review; final pass keeps both faces mounted for true 3D path and adds 7 test cases.
+- Contradictions: None.
+- Confidence: H
+- Notes: Reduced-motion path now swaps instantly and disables card hover/transition motion for this control.
+- Reviewer notes: Approved after spec and quality re-review.
 
 ## T12 — Section render + states + first-mount choreography
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:22:00+07:00
+- Finished: 2026-05-09T17:30:00+07:00
+- Reviewed: 2026-05-09T17:33:00+07:00
+- Branch: feature/T12-section-render
+- Commits: aae9023
+- Files: src/components/Section.tsx, src/lib/section.ts, src/lib/use-first-mount.ts, src/lib/use-count-up.ts, src/App.tsx, tests/section.test.tsx, tests/section.helpers.test.ts
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: Compatibility updates in tests/setup.ts and hero smoke tests to keep App integration tests stable with new Section/data dependencies.
+- Contradictions: None.
+- Confidence: H
+- Notes: Post-review fixes include vi-VN number parsing in count-up, StrictMode-safe first-mount gate, reduced-motion test coverage, retry refetch assertion.
+- Reviewer notes: Approved after spec and quality review fixes.
 
 ## T13 — Modal shell
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:33:00+07:00
+- Finished: 2026-05-09T17:35:00+07:00
+- Reviewed: 2026-05-09T17:35:00+07:00
+- Branch: feature/T13-modal-shell
+- Commits: aae9023
+- Files: src/components/Modal.tsx, src/components/Section.tsx, tests/modal.smoke.test.tsx
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass)
+- Unplanned: None.
+- Contradictions: None.
+- Confidence: H
+- Notes: Section header now includes Nhập liệu trigger; modal title localized with mode labels.
+- Reviewer notes: Approved.
 
 ## T14 — DataTable in modal + cell validation UI
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:35:00+07:00
+- Finished: 2026-05-09T17:36:00+07:00
+- Reviewed: 2026-05-09T17:36:00+07:00
+- Branch: feature/T14-datagrid
+- Commits: aae9023
+- Files: src/components/DataGrid.tsx, src/lib/field-labels.ts, src/components/Section.tsx, src/components/ui/tooltip.tsx, src/components/ui/alert-dialog.tsx, tests/datagrid.test.tsx
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass with 1 warning in DataGrid/useReactTable)
+- Unplanned: None.
+- Contradictions: None.
+- Confidence: H
+- Notes: Warning is React compiler compatibility warning for TanStack `useReactTable`, non-blocking and expected.
+- Reviewer notes: Approved.
 
 ## T15 — CRUD: upsert/delete/add row + debounce + toast
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:36:00+07:00
+- Finished: 2026-05-09T17:37:00+07:00
+- Reviewed: 2026-05-09T17:37:00+07:00
+- Branch: feature/T15-crud-flow
+- Commits: f20a900
+- Files: src/lib/use-debounced-save.ts, src/components/Toast.tsx, src/components/Section.tsx, src/App.tsx, tests/crud-flow.test.tsx, tests/use-debounced-save.test.ts
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass with 1 warning in DataGrid/useReactTable)
+- Unplanned: Supporting update in tests/section.test.tsx to keep suite green after CRUD integration.
+- Contradictions: None.
+- Confidence: H
+- Notes: ToastProvider mounted at app level, save success message uses Vietnamese `Đã lưu`.
+- Reviewer notes: Approved.
 
 ## T16 — Refresh flow
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T17:37:00+07:00
+- Finished: 2026-05-09T17:37:21+07:00
+- Reviewed: 2026-05-09T17:37:21+07:00
+- Branch: feature/T16-refresh-flow
+- Commits: f20a900
+- Files: src/components/SectionHeader.tsx, src/lib/use-auto-stale-refresh.ts, src/components/Section.tsx, src/App.tsx, tests/refresh-flow.test.tsx
+- Tests: npm run test (pass), npm run typecheck (pass), npm run build (pass), npm run lint (pass with 1 warning in DataGrid/useReactTable)
+- Unplanned: Compatibility update in tests/hero.smoke.test.tsx for App provider/hook behavior.
+- Contradictions: None.
+- Confidence: H
+- Notes: Auto stale-day runs after unlock and writes `ssi-last-refresh-date` in localStorage.
+- Reviewer notes: Approved.
 
 ## T17 — New Cloudflare Pages project + deploy
 
