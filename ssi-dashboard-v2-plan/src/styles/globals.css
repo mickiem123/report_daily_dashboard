@@ -30,3 +30,24 @@ body {
   color: var(--text-primary);
   font-family: "Be Vietnam Pro", sans-serif;
 }
+
+@layer utilities {
+  @keyframes drift {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 220px 220px;
+    }
+  }
+
+  .bg-drift {
+    animation: drift 90s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-drift {
+    animation: none;
+  }
+}

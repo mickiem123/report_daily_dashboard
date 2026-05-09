@@ -6,11 +6,11 @@
 |-----|----------------------------------------------------------|----------|-------|----------|-------|------|-----|
 | T01 | Bootstrap agent protocol files                          | done     | Codex | Codex    | hash  | H    | N   |
 | T02 | Scaffold Vite + React + TS + Tailwind + shadcn + tokens | done     | Codex | Codex    | build | H    | N   |
-| T03 | TypeScript contract + mock fixture                      | review   | Codex |          | build | H    | N   |
-| T04 | Port compute logic to TS with Vitest TDD                | pending  |       |          |       |      |     |
-| T05 | Port extractors + validation to TS with Vitest TDD      | pending  |       |          |       |      |     |
-| T06 | Supabase client + TanStack Query data layer             | pending  |       |          |       |      |     |
-| T07 | Background pattern component (dots + fade + drift)      | pending  |       |          |       |      |     |
+| T03 | TypeScript contract + mock fixture                      | done     | Codex | Codex    | build | H    | N   |
+| T04 | Port compute logic to TS with Vitest TDD                | done     | Codex | Codex    | test  | H    | N   |
+| T05 | Port extractors + validation to TS with Vitest TDD      | done     | Codex | Codex    | test  | H    | N   |
+| T06 | Supabase client + TanStack Query data layer             | done     | Codex | Codex    | test  | H    | N   |
+| T07 | Background pattern component (dots + fade + drift)      | done     | Codex | Codex    | test  | H    | N   |
 | T08 | Hero landing component                                  | pending  |       |          |       |      |     |
 | T09 | Layout shell + glass pill tabs                          | pending  |       |          |       |      |     |
 | T10 | Card front face                                         | pending  |       |          |       |      |     |
@@ -62,76 +62,76 @@
 
 - Started: 2026-05-09T11:23:20+07:00
 - Finished: 2026-05-09T11:24:31+07:00
-- Reviewed:
+- Reviewed: 2026-05-09T11:37:37+07:00
 - Branch: feat/v2-react-rewrite
-- Commits: pending
+- Commits: 6371ad0
 - Files: src/lib/types.ts, src/fixtures/sample-rows.ts
 - Tests: npm run typecheck (pass), npm run build (pass)
 - Unplanned: Executed directly on integration branch to recover from prior branch state drift.
 - Contradictions: T03 task expects dedicated feature branch merge; implementation is complete but currently awaiting commit bookkeeping on integration branch.
 - Confidence: H
 - Notes: Row contract aligned to Supabase schema; fixture exports daily(22)/weekly(3)/monthly(3) with last daily row date 2026-05-07.
-- Reviewer notes:
+- Reviewer notes: Approved on integration branch.
 
 ## T04 — Port compute logic to TS with Vitest TDD
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T11:26:00+07:00
+- Finished: 2026-05-09T11:37:37+07:00
+- Reviewed: 2026-05-09T11:37:37+07:00
+- Branch: feat/v2-react-rewrite
+- Commits: pending
+- Files: src/lib/compute.ts, tests/compute.test.ts
+- Tests: npm run test (pass, 59 total), npm run typecheck (pass)
+- Unplanned: Coordinator normalized mojibake string literals and enforced vitest globals to satisfy full-suite test gate.
+- Contradictions: Implemented on integration branch instead of dedicated feature branch to keep Wave 2 synchronized.
+- Confidence: H
+- Notes: 36 compute tests pass; includes mojibake tolerance and Vietnamese formatting expectations.
+- Reviewer notes: Approved after coordinator review and full-suite verification.
 
 ## T05 — Port extractors + validation to TS with Vitest TDD
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T11:26:00+07:00
+- Finished: 2026-05-09T11:37:37+07:00
+- Reviewed: 2026-05-09T11:37:37+07:00
+- Branch: feat/v2-react-rewrite
+- Commits: pending
+- Files: src/lib/extractors.ts, src/lib/validation.ts, tests/extractors.test.ts, tests/validation.test.ts
+- Tests: npm run test (pass, 59 total), npm run typecheck (pass)
+- Unplanned: Coordinator removed duplicated local compute helpers and bound extractors to src/lib/compute.ts for contract consistency.
+- Contradictions: Implemented on integration branch instead of dedicated feature branch to keep Wave 2 synchronized.
+- Confidence: H
+- Notes: 12 extractor tests + 6 validation tests pass; required VN diacritics and grouping verified.
+- Reviewer notes: Approved after coordinator review and full-suite verification.
 
 ## T06 — Supabase client + TanStack Query data layer
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T11:26:00+07:00
+- Finished: 2026-05-09T11:37:37+07:00
+- Reviewed: 2026-05-09T11:37:37+07:00
+- Branch: feat/v2-react-rewrite
+- Commits: pending
+- Files: .env.example, src/data/supabase.ts, src/data/queries.ts, src/data/mutations.ts, src/vite-env.d.ts, tests/data-layer.smoke.test.ts
+- Tests: npm run test (pass, 59 total), npm run typecheck (pass)
+- Unplanned: None beyond coordinator enabling vitest globals at suite level.
+- Contradictions: Implemented on integration branch instead of dedicated feature branch to keep Wave 2 synchronized.
+- Confidence: H
+- Notes: Query hooks and mode-routing mutations are typed and tested with mocked Supabase.
+- Reviewer notes: Approved after coordinator review and full-suite verification.
 
 ## T07 — Background pattern component
 
-- Started:
-- Finished:
-- Reviewed:
-- Branch:
-- Commits:
-- Files:
-- Tests:
-- Unplanned:
-- Contradictions:
-- Confidence:
-- Notes:
-- Reviewer notes:
+- Started: 2026-05-09T11:26:00+07:00
+- Finished: 2026-05-09T11:37:37+07:00
+- Reviewed: 2026-05-09T11:37:37+07:00
+- Branch: feat/v2-react-rewrite
+- Commits: pending
+- Files: src/components/BgPattern.tsx, src/styles/globals.css, src/App.tsx, tests/bg-pattern.smoke.test.tsx
+- Tests: npm run test (pass, 59 total), npm run typecheck (pass)
+- Unplanned: None.
+- Contradictions: Implemented on integration branch instead of dedicated feature branch to keep Wave 2 synchronized.
+- Confidence: H
+- Notes: Drift animation + reduced-motion override added; App mounts BgPattern under relative wrapper.
+- Reviewer notes: Approved after coordinator review and full-suite verification.
 
 ## T08 — Hero landing component
 
