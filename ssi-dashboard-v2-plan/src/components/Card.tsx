@@ -9,12 +9,6 @@ type CardProps = {
   onFlip?: () => void;
 };
 
-const auraByStatus: Record<Status, string> = {
-  up: "from-status-up/20 hover:from-status-up/30",
-  down: "from-status-down/20 hover:from-status-down/30",
-  flat: "from-status-flat/20 hover:from-status-flat/30",
-};
-
 const textByStatus: Record<Status, string> = {
   up: "text-status-up",
   down: "text-status-down",
@@ -22,15 +16,15 @@ const textByStatus: Record<Status, string> = {
 };
 
 const badgeByStatus: Record<Status, string> = {
-  up: "bg-status-up/15 text-status-up",
-  down: "bg-status-down/15 text-status-down",
-  flat: "bg-status-flat/15 text-status-flat",
+  up: "border-status-up/35 bg-canvas-soft text-status-up",
+  down: "border-status-down/35 bg-canvas-soft text-status-down",
+  flat: "border-hairline bg-canvas-soft text-ink-mute",
 };
 
 export function Card({ product, onFlip }: CardProps) {
   const status = getStatusFromVerb(product.verb);
-  const pinnedMetrics = product.sub_metrics.filter((m) => m.important && m.value !== "N/A");
-  const [flipped, setFlipped] = useState(false);
+  const pinnedMetrics = product.sub_metrics.filter((m) => m.important && m.value !== "N/A").slice(0, 3);
+  const [expanded, setExpanded] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -45,7 +39,7 @@ export function Card({ product, onFlip }: CardProps) {
   }, []);
 
   const handleFlip = () => {
-    setFlipped((value) => !value);
+    setExpanded((value) => !value);
     onFlip?.();
   };
 
@@ -54,25 +48,25 @@ export function Card({ product, onFlip }: CardProps) {
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-lg leading-none">{product.trend_emoji}</span>
-          <h3 className="font-semibold text-text-primary">{product.name}</h3>
+          <h3 className="text-lg font-medium leading-[1.2] text-ink">{product.name}</h3>
         </div>
-        <span className={cn("rounded-full px-2 py-1 text-xs font-medium", badgeByStatus[status])}>{product.verb}</span>
+        <span className={cn("rounded-full border px-2 py-1 text-xs font-medium", badgeByStatus[status])}>{product.verb}</span>
       </div>
 
       <div className="mb-5">
-        <p className="text-xs uppercase tracking-wide text-text-muted">{product.headline_label}</p>
-        <p className={cn("font-mono text-4xl font-bold", textByStatus[status])}>{product.headline_value}</p>
-        <p className={cn("font-mono text-sm", textByStatus[status])}>{product.headline_delta}</p>
+        <p className="text-xs uppercase tracking-wide text-ink-mute">{product.headline_label}</p>
+        <p className={cn("font-number text-4xl font-semibold leading-[1.15]", textByStatus[status])}>{product.headline_value}</p>
+        <p className={cn("font-number text-sm", textByStatus[status])}>{product.headline_delta}</p>
       </div>
 
       <div className="space-y-2">
         {pinnedMetrics.map((metric) => {
           const deltaStatus = getDeltaStatus(metric.delta, metric.inverse);
           return (
-            <div key={metric.label} data-testid="metric-row" className="grid grid-cols-[1.2fr_1fr_auto] items-center gap-2 text-sm">
-              <span className="truncate text-text-muted">{metric.label}</span>
-              <span className="truncate font-mono text-text-primary">{metric.value}</span>
-              <span className={cn("font-mono", textByStatus[deltaStatus])}>{metric.delta}</span>
+            <div key={metric.label} data-testid="metric-row" className="grid grid-cols-[1.2fr_1fr_auto] items-center gap-3 text-sm">
+              <span className="truncate text-ink-mute">{metric.label}</span>
+              <span className="font-number truncate text-ink">{metric.value}</span>
+              <span className={cn("font-number", textByStatus[deltaStatus])}>{metric.delta}</span>
             </div>
           );
         })}
@@ -84,35 +78,34 @@ export function Card({ product, onFlip }: CardProps) {
     <button
       type="button"
       data-status={status}
-      data-flipped={flipped}
-      aria-pressed={flipped}
+      data-flipped={expanded}
+      data-expanded={expanded}
+      aria-pressed={expanded}
+      aria-expanded={expanded}
       onClick={handleFlip}
       className={cn(
-        "relative h-full min-h-[312px] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-teal/60",
+        "relative h-full min-h-[312px] w-full overflow-hidden rounded-xl border border-hairline bg-canvas text-left shadow-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         reducedMotion ? "" : "transition-all duration-200 hover:-translate-y-1"
       )}
-      style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)", perspective: "1200px" }}
     >
-        <div
-          aria-hidden
-          className={cn(
-            "pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br to-transparent blur-3xl",
-            reducedMotion ? "" : "transition-all duration-200",
-            auraByStatus[status]
-          )}
-        />
-
-        <div
-          className={cn("relative h-full w-full [transform-style:preserve-3d]", flipped ? "rotate-y-180" : "")}
-          style={{ transition: reducedMotion ? "none" : "transform 600ms ease" }}
-        >
-          <div data-testid="card-front-face" className="absolute inset-0 p-6 [backface-visibility:hidden]">
-            {frontContent}
-          </div>
-          <div data-testid="card-back-face" className="absolute inset-0 p-6 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            {flipped ? <CardBack product={product} /> : null}
-          </div>
+      <div
+        className="relative h-full w-full"
+        style={{ transition: reducedMotion ? "none" : "max-height 320ms ease, opacity 220ms ease" }}
+      >
+        <div data-testid="card-front-face" className="p-6">
+          {frontContent}
         </div>
+        <div
+          data-testid="card-back-face"
+          className={cn(
+            "overflow-hidden border-t border-hairline px-6",
+            expanded ? "max-h-[420px] pb-6 pt-4 opacity-100" : "max-h-0 pb-0 pt-0 opacity-0"
+          )}
+          aria-hidden={!expanded}
+        >
+          {expanded ? <CardBack product={product} /> : null}
+        </div>
+      </div>
     </button>
   );
 }

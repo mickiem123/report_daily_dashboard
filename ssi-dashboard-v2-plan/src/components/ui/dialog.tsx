@@ -6,5 +6,5 @@ export function Dialog({ children }: { children: React.ReactNode }) {
 }
 
 export function DialogContent({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-md border border-glass bg-bg-elev p-4", className)}>{children}</div>;
+  return <div className={cn("rounded-lg border border-hairline bg-canvas p-4 text-ink shadow-modal", className)}>{children}</div>;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,19 +49,30 @@ export function RefreshButton({ mode }: RefreshButtonProps) {
         type="button"
         onClick={() => setConfirmOpen(true)}
         disabled={isCooldown}
-        className="inline-flex items-center rounded-full border border-teal-300/40 bg-white/10 px-4 py-2 text-sm font-medium text-text-primary shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset] backdrop-blur-md transition hover:border-teal-200/70 hover:bg-white/15 hover:shadow-[0_0_24px_rgba(45,212,191,0.2)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-9 items-center gap-2 rounded-md border border-hairline-strong bg-canvas px-4 text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        ↻ Tải lại
+        <RefreshCw size={16} aria-hidden />
+        Tải lại
       </button>
       <AlertDialog open={confirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-xl border-hairline bg-canvas p-6 shadow-modal">
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận tải lại</AlertDialogTitle>
-            <AlertDialogDescription>{`Tải lại dữ liệu ${MODE_NAMES[mode]}?`}</AlertDialogDescription>
+            <AlertDialogTitle className="font-medium text-ink">Xác nhận tải lại</AlertDialogTitle>
+            <AlertDialogDescription className="text-ink-mute">{`Tải lại dữ liệu ${MODE_NAMES[mode]}?`}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>Tải lại</AlertDialogAction>
+            <AlertDialogCancel
+              onClick={() => setConfirmOpen(false)}
+              className="rounded-md border-hairline-strong bg-canvas px-4 py-2 text-sm font-medium text-ink hover:bg-canvas-soft focus-visible:ring-primary/50"
+            >
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirm}
+              className="rounded-md border border-primary bg-primary px-4 py-2 text-sm font-medium text-on-primary hover:border-primary-deep hover:bg-primary-deep focus-visible:ring-primary/50"
+            >
+              Tải lại
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

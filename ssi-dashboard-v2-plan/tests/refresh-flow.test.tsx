@@ -45,7 +45,7 @@ describe("refresh flow", () => {
   it("shows confirm dialog on refresh click", () => {
     const queryClient = new QueryClient();
     renderWithClient(<RefreshButton mode="daily" />, queryClient);
-    fireEvent.click(screen.getByRole("button", { name: "↻ Tải lại" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tải lại" }));
     expect(screen.getByText("Xác nhận tải lại")).toBeInTheDocument();
     expect(screen.getByText("Tải lại dữ liệu ngày?")).toBeInTheDocument();
   });
@@ -54,8 +54,8 @@ describe("refresh flow", () => {
     const queryClient = new QueryClient();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries").mockResolvedValue(undefined);
     renderWithClient(<RefreshButton mode="weekly" />, queryClient);
-    fireEvent.click(screen.getByRole("button", { name: "↻ Tải lại" }));
     fireEvent.click(screen.getByRole("button", { name: "Tải lại" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Tải lại" })[1]);
     await act(async () => {
       await Promise.resolve();
     });
@@ -66,9 +66,9 @@ describe("refresh flow", () => {
     const queryClient = new QueryClient();
     vi.spyOn(queryClient, "invalidateQueries").mockResolvedValue(undefined);
     renderWithClient(<RefreshButton mode="monthly" />, queryClient);
-    const refreshButton = screen.getByRole("button", { name: "↻ Tải lại" });
+    const refreshButton = screen.getByRole("button", { name: "Tải lại" });
     fireEvent.click(refreshButton);
-    fireEvent.click(screen.getByRole("button", { name: "Tải lại" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Tải lại" })[1]);
     await act(async () => {
       await Promise.resolve();
     });

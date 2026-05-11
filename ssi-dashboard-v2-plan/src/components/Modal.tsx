@@ -19,7 +19,7 @@ export function NhapLieuButton({ onClick }: NhapLieuButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center rounded-full border border-teal-300/40 bg-white/10 px-4 py-2 text-sm font-medium text-text-primary shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset] backdrop-blur-md transition hover:border-teal-200/70 hover:bg-white/15 hover:shadow-[0_0_24px_rgba(45,212,191,0.2)]"
+      className="inline-flex min-h-9 items-center rounded-sm border border-primary bg-primary px-4 py-2 text-sm font-medium leading-none text-on-primary transition hover:border-primary-deep hover:bg-primary-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
     >
       Nhập liệu
     </button>
@@ -42,18 +42,18 @@ export function Modal({ open, onOpenChange, title, children }: ModalProps) {
     <Dialog>
       <div
         role="presentation"
-        className="fixed inset-0 bg-black/40 backdrop-blur-md"
+        className="fixed inset-0 z-40 bg-ink/12"
         onClick={() => onOpenChange(false)}
       />
-      <DialogContent className="fixed inset-4 z-50 rounded-2xl border border-white/10 bg-bg-elev/80 p-6 backdrop-blur-xl md:inset-8 md:p-8">
+      <DialogContent className="fixed inset-3 z-50 rounded-xl border border-hairline bg-canvas p-5 shadow-modal md:inset-8 md:p-8">
         <div className="relative flex h-full flex-col">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
+          <div className="mb-6 flex items-center justify-between gap-4 border-b border-hairline pb-4">
+            <h2 className="text-[22px] font-medium leading-[1.2] text-ink">{title}</h2>
             <button
               type="button"
               aria-label="Close modal"
               onClick={() => onOpenChange(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-text-primary transition hover:bg-white/20"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-hairline-strong bg-canvas text-ink-mute transition hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
             >
               <X size={20} />
             </button>

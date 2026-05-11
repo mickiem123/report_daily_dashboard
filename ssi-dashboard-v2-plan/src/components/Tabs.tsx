@@ -10,16 +10,16 @@ type DashboardTabsProps = {
 };
 
 const triggerClassName = cn(
-  "rounded-full px-5 py-2 text-sm transition-colors",
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-teal/60",
-  "data-[state=active]:bg-accent-teal/15 data-[state=active]:text-accent-teal data-[state=active]:shadow-[0_0_24px_rgba(95,201,178,0.25)]",
-  "data-[state=inactive]:text-text-muted data-[state=inactive]:hover:text-text-primary",
+  "rounded-md px-5 py-2 text-sm font-medium transition-colors",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+  "data-[state=active]:bg-canvas-night data-[state=active]:text-on-dark",
+  "data-[state=inactive]:text-ink-mute data-[state=inactive]:hover:bg-canvas-soft data-[state=inactive]:hover:text-ink",
 );
 
 export function DashboardTabs({ value, onValueChange, children }: DashboardTabsProps) {
   return (
     <Tabs value={value} onValueChange={(next) => onValueChange(next as Mode)} className="w-full">
-      <TabsList className="sticky top-4 z-30 mx-auto flex w-fit gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-md">
+      <TabsList className="sticky top-4 z-30 mx-auto flex w-fit gap-1 rounded-lg border border-hairline bg-canvas p-1 shadow-subtle">
         <TabsTrigger value="daily" className={triggerClassName}>
           Daily
         </TabsTrigger>

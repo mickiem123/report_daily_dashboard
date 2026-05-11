@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
+import { PencilLine } from "lucide-react";
 import { Card } from "@/components/Card";
 import { DataGrid } from "@/components/DataGrid";
-import { Modal, NhapLieuButton } from "@/components/Modal";
+import { Modal } from "@/components/Modal";
 import { RefreshButton } from "@/components/SectionHeader";
 import { useToastHelpers } from "@/components/Toast";
 import { deleteRow, upsertRow } from "@/data/mutations";
 import { useDaily, useMonthly, useWeekly } from "@/data/queries";
 import { buildCards, sortCards } from "@/lib/section";
 import type { Mode, ProductCard, Row } from "@/lib/types";
-import { useDebouncedSave } from "@/lib/use-debounced-save";
 import { useCountUp } from "@/lib/use-count-up";
 import { useFirstMount } from "@/lib/use-first-mount";
 
@@ -56,43 +56,21 @@ export function Section({ mode }: SectionProps) {
 
 function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<Row[]> }) {
   const [editorOpen, setEditorOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
   const { toastSaved, toastError } = useToastHelpers();
   const [pendingByNgay, setPendingByNgay] = useState<Record<string, Partial<Row> & { ngay: string }>>({});
 
-  const { save: saveDebounced } = useDebouncedSave(
-    async ({ ngay, changes }: { ngay: string; changes: Partial<Row> }) => {
-      try {
-        await upsertRow(mode, { ngay, ...changes });
-        toastSaved();
-        await queryClient.invalidateQueries({ queryKey: [mode] });
-        setPendingByNgay((prev) => {
-          const next = { ...prev };
-          delete next[ngay];
-          return next;
-        });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Lưu dữ liệu thất bại";
-        toastError(message);
-        throw err;
-      }
-    },
-    1000
-  );
-
   const handleCellEdit = (ngay: string, field: keyof Row, newValue: number | string | null) => {
     setPendingByNgay((prev) => {
       const rowKey = ngay || "__new__";
-      const next = {
+      return {
         ...prev,
         [rowKey]: {
           ...(prev[rowKey] ?? { ngay }),
           [field]: newValue,
         },
       };
-      const targetNgay = (next[rowKey].ngay ?? "").trim();
-      if (targetNgay) saveDebounced({ ngay: targetNgay, changes: next[rowKey] });
-      return next;
     });
   };
 
@@ -102,8 +80,39 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
     if (!candidate || !ngay) return;
     const changes = { ...candidate };
     delete changes.ngay;
-    setPendingByNgay((prev) => ({ ...prev, [ngay]: { ngay, ...changes }, __new__: { ngay: "" } }));
-    saveDebounced({ ngay, changes });
+    if (Object.keys(changes).length === 0) return;
+    setPendingByNgay((prev) => {
+      const rest = { ...prev };
+      delete rest.__new__;
+      return { ...rest, [ngay]: { ngay, ...changes } };
+    });
+  };
+
+  const handleSaveChanges = async () => {
+    const payloads = Object.values(pendingByNgay)
+      .map((entry) => {
+        const ngay = (entry.ngay ?? "").trim();
+        if (!ngay) return null;
+        const changes = Object.fromEntries(Object.entries(entry).filter(([key]) => key !== "ngay"));
+        if (Object.keys(changes).length === 0) return null;
+        return { ngay, changes };
+      })
+      .filter((item): item is { ngay: string; changes: Partial<Row> } => item !== null);
+
+    if (payloads.length === 0) return;
+
+    setIsSaving(true);
+    try {
+      await Promise.all(payloads.map((item) => upsertRow(mode, { ngay: item.ngay, ...item.changes })));
+      toastSaved();
+      await queryClient.invalidateQueries({ queryKey: [mode] });
+      setPendingByNgay({});
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Lưu dữ liệu thất bại";
+      toastError(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteRow = async (ngay: string) => {
@@ -120,7 +129,14 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
     <section className="space-y-6">
       <div className="flex items-center justify-end gap-2">
         <RefreshButton mode={mode} />
-        <NhapLieuButton onClick={() => setEditorOpen(true)} />
+        <button
+          type="button"
+          onClick={() => setEditorOpen(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-md border border-primary bg-primary px-4 text-sm font-medium text-on-primary transition hover:border-primary-deep hover:bg-primary-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
+          <PencilLine size={16} aria-hidden />
+          Nhập liệu
+        </button>
       </div>
       <SectionBody query={query} />
       <Modal open={editorOpen} onOpenChange={setEditorOpen} title={`Nhập liệu ${MODE_NAMES[mode]}`}>
@@ -131,7 +147,10 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
             handleCellEdit(ngay, field, newValue);
           }}
           onAddRow={handleAddRow}
+          onSaveChanges={handleSaveChanges}
           onDeleteRow={handleDeleteRow}
+          hasPendingChanges={Object.keys(pendingByNgay).length > 0}
+          isSaving={isSaving}
         />
       </Modal>
     </section>
@@ -154,7 +173,7 @@ function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {SKELETON_ITEMS.map((item) => (
-          <div key={item} data-testid="section-skeleton" className="min-h-[312px] animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+          <div key={item} data-testid="section-skeleton" className="min-h-[312px] animate-pulse rounded-xl border border-hairline bg-canvas-soft" />
         ))}
       </div>
     );
@@ -163,9 +182,13 @@ function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
   if (query.isError) {
     return (
       <div className="flex min-h-[320px] items-center justify-center">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-md">
-          <p className="text-text-primary">Lỗi tải dữ liệu</p>
-          <button type="button" onClick={() => query.refetch()} className="mt-4 rounded-md border border-white/15 px-4 py-2 text-sm text-text-primary">
+        <div className="w-full max-w-md rounded-xl border border-hairline bg-canvas p-6 text-center shadow-subtle">
+          <p className="text-ink">Lỗi tải dữ liệu</p>
+          <button
+            type="button"
+            onClick={() => query.refetch()}
+            className="mt-4 rounded-md border border-hairline-strong bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:bg-canvas-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
             Retry
           </button>
         </div>
@@ -177,8 +200,8 @@ function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
   if (rows.length === 0) {
     return (
       <div className="flex min-h-[320px] items-center justify-center">
-        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-md">
-          <p className="text-text-primary">Chưa có dữ liệu</p>
+        <div className="w-full max-w-md rounded-xl border border-hairline bg-canvas p-6 text-center shadow-subtle">
+          <p className="text-ink">Chưa có dữ liệu</p>
         </div>
       </div>
     );

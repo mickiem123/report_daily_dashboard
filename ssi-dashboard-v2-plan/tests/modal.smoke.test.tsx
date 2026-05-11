@@ -54,13 +54,15 @@ describe("Modal", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("renders blurred overlay backdrop", () => {
+  it("renders light modal panel chrome", () => {
     const { container } = render(
       <Modal open onOpenChange={vi.fn()} title="Nhập liệu ngày">
         <div>Grid goes here (T14)</div>
       </Modal>,
     );
 
-    expect(container.querySelector(".backdrop-blur-md")).toBeInTheDocument();
+    expect(container.querySelector(".bg-canvas")).toBeInTheDocument();
+    expect(container.querySelector(".shadow-modal")).toBeInTheDocument();
+    expect(container.querySelector(".md\\:inset-8")).toBeInTheDocument();
   });
 });

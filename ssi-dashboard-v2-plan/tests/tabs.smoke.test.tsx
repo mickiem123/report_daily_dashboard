@@ -6,7 +6,11 @@ import { DashboardLayout } from "../src/components/Layout";
 describe("DashboardLayout tabs", () => {
   it("switches mode by click and keyboard with one active tab", async () => {
     const user = userEvent.setup();
-    render(<DashboardLayout>{(mode) => <div>Section: {mode}</div>}</DashboardLayout>);
+    render(
+      <DashboardLayout theme="dark" onToggleTheme={() => {}}>
+        {(mode) => <div>Section: {mode}</div>}
+      </DashboardLayout>
+    );
 
     const dailyTab = screen.getByRole("tab", { name: "Daily" });
     const weeklyTab = screen.getByRole("tab", { name: "Weekly" });

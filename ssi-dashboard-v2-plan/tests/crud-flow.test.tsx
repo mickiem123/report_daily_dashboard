@@ -34,10 +34,12 @@ vi.mock("@/components/DataGrid", () => ({
   DataGrid: ({
     onCellEdit,
     onAddRow,
+    onSaveChanges,
     onDeleteRow,
   }: {
     onCellEdit: (ngay: string, field: string, newValue: number | string | null) => void;
     onAddRow: () => void;
+    onSaveChanges: () => void;
     onDeleteRow: (ngay: string) => void;
   }) => (
     <div>
@@ -55,6 +57,9 @@ vi.mock("@/components/DataGrid", () => ({
       </button>
       <button type="button" onClick={onAddRow}>
         add-row
+      </button>
+      <button type="button" onClick={onSaveChanges}>
+        save-changes
       </button>
       <button type="button" onClick={() => onDeleteRow("2026-04-08")}>
         delete-row
@@ -96,13 +101,13 @@ describe("CRUD flow", () => {
     vi.useRealTimers();
   });
 
-  it("calls upsert and toastSaved after 1 second on edit", async () => {
+  it("stages edit and saves only when save action is clicked", async () => {
     mutationMocks.upsertRow.mockResolvedValue(undefined);
     renderSection();
     fireEvent.click(screen.getByText("edit-success"));
-
+    expect(mutationMocks.upsertRow).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText("save-changes"));
     await act(async () => {
-      vi.advanceTimersByTime(1000);
       await Promise.resolve();
     });
 
@@ -114,9 +119,9 @@ describe("CRUD flow", () => {
     mutationMocks.upsertRow.mockRejectedValue(new Error("Boom"));
     renderSection();
     fireEvent.click(screen.getByText("edit-success"));
+    fireEvent.click(screen.getByText("save-changes"));
 
     await act(async () => {
-      vi.advanceTimersByTime(1000);
       await Promise.resolve();
     });
 
@@ -133,14 +138,14 @@ describe("CRUD flow", () => {
     expect(mutationMocks.deleteRow).toHaveBeenCalledWith("daily", "2026-04-08");
   });
 
-  it("coalesces rapid edits to one upsert call", async () => {
+  it("coalesces rapid edits to one upsert call on save", async () => {
     mutationMocks.upsertRow.mockResolvedValue(undefined);
     renderSection();
     fireEvent.click(screen.getByText("edit-success"));
     fireEvent.click(screen.getByText("edit-rapid"));
+    fireEvent.click(screen.getByText("save-changes"));
 
     await act(async () => {
-      vi.advanceTimersByTime(1000);
       await Promise.resolve();
     });
 
@@ -148,18 +153,30 @@ describe("CRUD flow", () => {
     expect(mutationMocks.upsertRow).toHaveBeenCalledWith("daily", { ngay: "2026-04-08", gtgd_cs_ssi: 5100 });
   });
 
-  it("adds a new row via upsert path", async () => {
+  it("adds a new row via upsert path when save is clicked", async () => {
     mutationMocks.upsertRow.mockResolvedValue(undefined);
     renderSection();
     fireEvent.click(screen.getByText("new-date"));
     fireEvent.click(screen.getByText("new-value"));
     fireEvent.click(screen.getByText("add-row"));
+    fireEvent.click(screen.getByText("save-changes"));
 
     await act(async () => {
-      vi.advanceTimersByTime(1000);
       await Promise.resolve();
     });
 
     expect(mutationMocks.upsertRow).toHaveBeenCalledWith("daily", { ngay: "2026-05-09", gtgd_cs_ssi: 5300 });
+  });
+
+  it("does not save before explicit save action", async () => {
+    mutationMocks.upsertRow.mockResolvedValue(undefined);
+    renderSection();
+    fireEvent.click(screen.getByText("new-date"));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mutationMocks.upsertRow).not.toHaveBeenCalled();
   });
 });

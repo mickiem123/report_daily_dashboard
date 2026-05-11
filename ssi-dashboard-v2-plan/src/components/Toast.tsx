@@ -47,8 +47,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {items.map((item) => (
           <ToastCard
             key={item.id}
-            className={`pointer-events-auto min-w-[200px] border-white/20 bg-white/10 backdrop-blur-md ${
-              item.variant === "error" ? "text-red-200" : "text-text-primary"
+            className={`pointer-events-auto min-w-[200px] rounded-md border bg-canvas shadow-panel ${
+              item.variant === "error" ? "border-status-down/35 text-status-down" : "border-hairline text-ink"
             }`}
           >
             {item.message}

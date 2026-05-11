@@ -22,11 +22,12 @@ function makeProduct(overrides: Partial<ProductCard> = {}): ProductCard {
 }
 
 describe("Card", () => {
-  it("maps verb tăng* to up status and uses status-up aura", () => {
+  it("maps verb tăng* to up status without rendering a glow aura", () => {
     const { container } = render(<Card product={makeProduct({ verb: "tăng mạnh" })} />);
     const root = container.firstElementChild as HTMLElement;
     expect(root).toHaveAttribute("data-status", "up");
-    expect(root.querySelector(".from-status-up\\/20")).toBeInTheDocument();
+    expect(root.querySelector(".from-status-up\\/20")).not.toBeInTheDocument();
+    expect(root).toHaveClass("rounded-xl", "border-hairline", "bg-canvas");
   });
 
   it("maps verb giảm* to down status", () => {
@@ -51,6 +52,23 @@ describe("Card", () => {
     expect(screen.getAllByTestId("metric-row")).toHaveLength(1);
     expect(screen.queryByText("B")).not.toBeInTheDocument();
     expect(screen.queryByText("C")).not.toBeInTheDocument();
+  });
+
+  it("caps summary metrics to 3 rows", () => {
+    render(
+      <Card
+        product={makeProduct({
+          sub_metrics: [
+            { label: "A", value: "100", delta: "+1", important: true },
+            { label: "B", value: "200", delta: "+1", important: true },
+            { label: "C", value: "300", delta: "+1", important: true },
+            { label: "D", value: "400", delta: "+1", important: true },
+          ],
+        })}
+      />
+    );
+    expect(screen.getAllByTestId("metric-row")).toHaveLength(3);
+    expect(screen.queryByText("D")).not.toBeInTheDocument();
   });
 
   it("renders headline value text", () => {

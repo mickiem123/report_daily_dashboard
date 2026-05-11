@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -58,6 +58,21 @@ describe("Hero", () => {
 describe("App", () => {
   beforeEach(() => {
     import.meta.env.VITE_WRITE_PASSWORD = "secret";
+    const store = new Map<string, string>();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+        removeItem: (key: string) => {
+          store.delete(key);
+        },
+      },
+    });
+    delete document.documentElement.dataset.theme;
+    document.documentElement.classList.remove("dark");
   });
 
   it("shows Hero before unlock, then dashboard layout content after unlock, with background still mounted", async () => {
@@ -77,5 +92,29 @@ describe("App", () => {
 
     expect(screen.getByText("Section: daily")).toBeInTheDocument();
     expect(screen.getByTestId("bg-pattern")).toBeInTheDocument();
+  });
+
+  it("initializes dark theme by default and persists toggle selection", async () => {
+    const user = userEvent.setup();
+    const queryClient = new QueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toBe("dark");
+      expect(document.documentElement.classList.contains("dark")).toBe(true);
+      expect(window.localStorage.getItem("ssi-theme")).toBe("dark");
+    });
+
+    await user.type(screen.getByLabelText("Mật khẩu"), "secret");
+    await user.click(screen.getByRole("button", { name: "Vào hệ thống" }));
+    await user.click(screen.getByRole("button", { name: "Switch to light mode" }));
+
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
+    expect(window.localStorage.getItem("ssi-theme")).toBe("light");
   });
 });
