@@ -11,6 +11,7 @@ function makeProduct(overrides: Partial<ProductCard> = {}): ProductCard {
     headline_label: "Thị phần cơ sở",
     headline_value: "12,34%",
     headline_delta: "(+0,23%)",
+    headline_history: [10, 11, 10.5, 12],
     verb: "tăng mạnh",
     sub_metrics: [
       { label: "A", value: "100", delta: "+10", important: true },
@@ -74,5 +75,15 @@ describe("Card", () => {
   it("renders headline value text", () => {
     render(<Card product={makeProduct({ headline_value: "1.234 tỷ" })} />);
     expect(screen.getByText("1.234 tỷ")).toBeInTheDocument();
+  });
+
+  it("renders a status-colored headline sparkline when history is available", () => {
+    render(<Card product={makeProduct({ verb: "giảm", headline_history: [12, 11, 10] })} />);
+    expect(screen.getByTestId("headline-sparkline")).toHaveClass("text-status-down");
+  });
+
+  it("does not render a sparkline for short history", () => {
+    render(<Card product={makeProduct({ headline_history: [12] })} />);
+    expect(screen.queryByTestId("headline-sparkline")).not.toBeInTheDocument();
   });
 });

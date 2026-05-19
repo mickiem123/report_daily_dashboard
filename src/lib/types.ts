@@ -64,6 +64,7 @@ export interface ProductCard {
   headline_label: string;
   headline_value: string;
   headline_delta: string;
+  headline_history?: number[];
   verb: string;
   sub_metrics: SubMetric[];
 }

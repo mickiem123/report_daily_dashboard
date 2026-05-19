@@ -87,6 +87,7 @@ describe("product metadata builder", () => {
       headline_label: "Tá»•ng dÆ° ná»£ Margin",
       headline_value: "1.100 tỷ",
       headline_delta: "(+100 tỷ, +10,00%)",
+      headline_history: [1000, 1100],
     });
     expect(cards[0].sub_metrics.map((metric) => metric.label)).toEqual(["SLKH Margin", "DÆ° ná»£ T+7"]);
     expect(cards[0].sub_metrics.find((metric) => metric.label === "DÆ° ná»£ T+7")?.group).toBe("T+7");
