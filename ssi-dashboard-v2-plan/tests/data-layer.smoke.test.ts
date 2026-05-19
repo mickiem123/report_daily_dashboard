@@ -13,6 +13,7 @@ const { fromMock, supabaseMock } = vi.hoisted(() => {
 });
 
 vi.mock("@/data/supabase", () => ({
+  hasSupabaseEnv: true,
   supabase: supabaseMock,
 }));
 

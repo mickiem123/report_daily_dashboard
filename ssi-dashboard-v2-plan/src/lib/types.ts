@@ -1,4 +1,5 @@
 export interface Row {
+  [key: string]: number | string | null | undefined;
   id?: number | null;
   ngay: string;
   thi_phan_co_so: number | null;
@@ -46,6 +47,7 @@ export interface Row {
 export type Status = "up" | "down" | "flat";
 
 export interface SubMetric {
+  metric_id?: string;
   label: string;
   value: string;
   delta: string;
@@ -55,6 +57,7 @@ export interface SubMetric {
 }
 
 export interface ProductCard {
+  product_id?: string;
   key: string;
   name: string;
   trend_emoji: string;

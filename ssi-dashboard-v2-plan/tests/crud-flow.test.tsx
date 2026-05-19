@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Section } from "@/components/Section";
 import { sampleDailyRows } from "@/fixtures/sample-rows";
+import { sampleProductMetadata } from "@/fixtures/product-metadata";
 
 const queryMocks = vi.hoisted(() => ({
   useDaily: vi.fn(),
@@ -15,13 +16,31 @@ const mutationMocks = vi.hoisted(() => ({
   deleteRow: vi.fn(),
 }));
 
+const schemaAdminMocks = vi.hoisted(() => ({
+  addProduct: vi.fn(),
+  addMetric: vi.fn(),
+  deleteMetric: vi.fn(),
+  deleteProduct: vi.fn(),
+}));
+
 const toastMocks = vi.hoisted(() => ({
   toastSaved: vi.fn(),
   toastError: vi.fn(),
 }));
 
 vi.mock("@/data/queries", () => queryMocks);
+vi.mock("@/data/metadata", () => ({
+  PRODUCT_METADATA_QUERY_KEY: ["product-metadata"],
+  useProductMetadata: () => ({
+    data: sampleProductMetadata,
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+}));
 vi.mock("@/data/mutations", () => mutationMocks);
+vi.mock("@/data/schema-admin", () => schemaAdminMocks);
 vi.mock("@/components/Toast", () => ({
   useToastHelpers: () => ({
     toastSaved: toastMocks.toastSaved,
@@ -178,5 +197,20 @@ describe("CRUD flow", () => {
     });
 
     expect(mutationMocks.upsertRow).not.toHaveBeenCalled();
+  });
+
+  it("adds a product card through schema admin", async () => {
+    schemaAdminMocks.addProduct.mockResolvedValue({ id: "p2", key: "vip", name: "VIP" });
+    renderSection();
+
+    fireEvent.click(screen.getByRole("button", { name: "Thêm card sản phẩm" }));
+    fireEvent.change(screen.getByLabelText("Tên sản phẩm"), { target: { value: "VIP" } });
+    fireEvent.click(screen.getByRole("button", { name: "Tạo card" }));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(schemaAdminMocks.addProduct).toHaveBeenCalledWith({ name: "VIP" });
   });
 });

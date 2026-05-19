@@ -2,13 +2,27 @@ import { useEffect, useMemo, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { PencilLine } from "lucide-react";
+import { AddProductCard } from "@/components/AddProductCard";
 import { Card } from "@/components/Card";
 import { DataGrid } from "@/components/DataGrid";
 import { Modal } from "@/components/Modal";
 import { RefreshButton } from "@/components/SectionHeader";
+import { StructureDialog } from "@/components/StructureDialog";
 import { useToastHelpers } from "@/components/Toast";
+import { PRODUCT_METADATA_QUERY_KEY, useProductMetadata } from "@/data/metadata";
 import { deleteRow, upsertRow } from "@/data/mutations";
 import { useDaily, useMonthly, useWeekly } from "@/data/queries";
+import {
+  addMetric,
+  addProduct,
+  deleteMetric,
+  deleteProduct,
+  type AddMetricPayload,
+  type DeleteMetricPayload,
+  type DeleteProductPayload,
+} from "@/data/schema-admin";
+import { buildProductCardsFromMetadata, getEditableFields } from "@/lib/product-builder";
+import type { MetricDefinition, ProductDefinition, ProductMetadata } from "@/lib/product-metadata";
 import { buildCards, sortCards } from "@/lib/section";
 import type { Mode, ProductCard, Row } from "@/lib/types";
 import { useCountUp } from "@/lib/use-count-up";
@@ -16,10 +30,29 @@ import { useFirstMount } from "@/lib/use-first-mount";
 
 type SectionProps = { mode: Mode };
 
-function CountUpHeadlineCard({ product, enabled }: { product: ProductCard; enabled: boolean }) {
+function CountUpHeadlineCard({
+  product,
+  enabled,
+  onAddMetric,
+  onDeleteProduct,
+  onDeleteMetric,
+}: {
+  product: ProductCard;
+  enabled: boolean;
+  onAddMetric?: () => void;
+  onDeleteProduct?: () => void;
+  onDeleteMetric?: (metricId: string) => void;
+}) {
   const headline = useCountUp(product.headline_value, enabled);
   const animatedProduct = useMemo(() => ({ ...product, headline_value: headline }), [headline, product]);
-  return <Card product={animatedProduct} />;
+  return (
+    <Card
+      product={animatedProduct}
+      onAddMetric={onAddMetric}
+      onDeleteProduct={onDeleteProduct}
+      onDeleteMetric={onDeleteMetric}
+    />
+  );
 }
 
 function useReducedMotion(): boolean {
@@ -57,9 +90,16 @@ export function Section({ mode }: SectionProps) {
 function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<Row[]> }) {
   const [editorOpen, setEditorOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [structureSaving, setStructureSaving] = useState(false);
+  const [metricDialogProductId, setMetricDialogProductId] = useState<string | null>(null);
+  const [deleteMetricTarget, setDeleteMetricTarget] = useState<MetricDefinition | null>(null);
+  const [deleteProductTarget, setDeleteProductTarget] = useState<ProductDefinition | null>(null);
   const queryClient = useQueryClient();
   const { toastSaved, toastError } = useToastHelpers();
   const [pendingByNgay, setPendingByNgay] = useState<Record<string, Partial<Row> & { ngay: string }>>({});
+  const metadataQuery = useProductMetadata();
+  const metadata = metadataQuery.data;
+  const editableFields = metadata ? getEditableFields(metadata) : undefined;
 
   const handleCellEdit = (ngay: string, field: keyof Row, newValue: number | string | null) => {
     setPendingByNgay((prev) => {
@@ -125,8 +165,77 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
     }
   };
 
+  const refreshStructure = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: [mode] }),
+      queryClient.invalidateQueries({ queryKey: PRODUCT_METADATA_QUERY_KEY }),
+    ]);
+  };
+
+  const handleAddProduct = async (payload: { name: string }) => {
+    setStructureSaving(true);
+    try {
+      await addProduct(payload);
+      await refreshStructure();
+      toastSaved();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Không tạo được card");
+    } finally {
+      setStructureSaving(false);
+    }
+  };
+
+  const handleAddMetric = async (payload: AddMetricPayload) => {
+    setStructureSaving(true);
+    try {
+      await addMetric(payload);
+      await refreshStructure();
+      setMetricDialogProductId(null);
+      toastSaved();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Không tạo được metric");
+    } finally {
+      setStructureSaving(false);
+    }
+  };
+
+  const handleDeleteMetric = async (payload: DeleteMetricPayload) => {
+    setStructureSaving(true);
+    try {
+      await deleteMetric(payload);
+      await refreshStructure();
+      setDeleteMetricTarget(null);
+      toastSaved();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Không xóa được metric");
+    } finally {
+      setStructureSaving(false);
+    }
+  };
+
+  const handleDeleteProduct = async (payload: DeleteProductPayload) => {
+    setStructureSaving(true);
+    try {
+      await deleteProduct(payload);
+      await refreshStructure();
+      setDeleteProductTarget(null);
+      toastSaved();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Không xóa được card");
+    } finally {
+      setStructureSaving(false);
+    }
+  };
+
+  const metricDialogProduct = metadata?.products.find((product) => product.id === metricDialogProductId);
+
   return (
     <section className="space-y-6">
+      {metadataQuery.isError ? (
+        <div className="rounded-sm border border-status-down/45 bg-status-down/10 px-3 py-2 text-sm text-status-down">
+          Metadata schema chưa sẵn sàng trên Supabase. Cần tạo bảng metadata và deploy Edge Function `schema-admin` để dùng thêm/xóa card hoặc metric.
+        </div>
+      ) : null}
       <div className="flex items-center justify-end gap-2">
         <RefreshButton mode={mode} />
         <button
@@ -138,11 +247,26 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
           Nhập liệu
         </button>
       </div>
-      <SectionBody query={query} />
+      <SectionBody
+        query={query}
+        metadata={metadata}
+        structureSaving={structureSaving}
+        onAddProduct={handleAddProduct}
+        onAddMetric={(productId) => setMetricDialogProductId(productId)}
+        onDeleteMetric={(metricId) => {
+          const metric = metadata?.metrics.find((item) => item.id === metricId);
+          if (metric) setDeleteMetricTarget(metric);
+        }}
+        onDeleteProduct={(productId) => {
+          const product = metadata?.products.find((item) => item.id === productId);
+          if (product) setDeleteProductTarget(product);
+        }}
+      />
       <Modal open={editorOpen} onOpenChange={setEditorOpen} title={`Nhập liệu ${MODE_NAMES[mode]}`}>
         <DataGrid
           mode={mode}
           rows={query.data ?? []}
+          editableFields={editableFields}
           onCellEdit={(ngay, field, newValue) => {
             handleCellEdit(ngay, field, newValue);
           }}
@@ -153,11 +277,69 @@ function SectionWithEditor({ mode, query }: { mode: Mode; query: UseQueryResult<
           isSaving={isSaving}
         />
       </Modal>
+      {metricDialogProduct ? (
+        <StructureDialog
+          open
+          mode="add_metric"
+          product={metricDialogProduct}
+          isSaving={structureSaving}
+          onOpenChange={(open) => {
+            if (!open) setMetricDialogProductId(null);
+          }}
+          onAddMetric={handleAddMetric}
+          onDeleteMetric={handleDeleteMetric}
+          onDeleteProduct={handleDeleteProduct}
+        />
+      ) : null}
+      {deleteMetricTarget ? (
+        <StructureDialog
+          open
+          mode="delete_metric"
+          metric={deleteMetricTarget}
+          isSaving={structureSaving}
+          onOpenChange={(open) => {
+            if (!open) setDeleteMetricTarget(null);
+          }}
+          onAddMetric={handleAddMetric}
+          onDeleteMetric={handleDeleteMetric}
+          onDeleteProduct={handleDeleteProduct}
+        />
+      ) : null}
+      {deleteProductTarget ? (
+        <StructureDialog
+          open
+          mode="delete_product"
+          product={deleteProductTarget}
+          isSaving={structureSaving}
+          onOpenChange={(open) => {
+            if (!open) setDeleteProductTarget(null);
+          }}
+          onAddMetric={handleAddMetric}
+          onDeleteMetric={handleDeleteMetric}
+          onDeleteProduct={handleDeleteProduct}
+        />
+      ) : null}
     </section>
   );
 }
 
-function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
+function SectionBody({
+  query,
+  metadata,
+  structureSaving,
+  onAddProduct,
+  onAddMetric,
+  onDeleteMetric,
+  onDeleteProduct,
+}: {
+  query: UseQueryResult<Row[]>;
+  metadata?: ProductMetadata;
+  structureSaving: boolean;
+  onAddProduct: (payload: { name: string }) => void | Promise<void>;
+  onAddMetric: (productId: string) => void;
+  onDeleteMetric: (metricId: string) => void;
+  onDeleteProduct: (productId: string) => void;
+}) {
   const reducedMotion = useReducedMotion();
   const firstMount = useFirstMount();
   const enableChoreography = firstMount && !reducedMotion;
@@ -207,7 +389,7 @@ function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
     );
   }
 
-  const cards = sortCards(buildCards(rows));
+  const cards = metadata ? buildProductCardsFromMetadata(rows, metadata) : sortCards(buildCards(rows));
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -222,9 +404,16 @@ function SectionBody({ query }: { query: UseQueryResult<Row[]> }) {
               : undefined
           }
         >
-          <CountUpHeadlineCard product={product} enabled={enableChoreography} />
+          <CountUpHeadlineCard
+            product={product}
+            enabled={enableChoreography}
+            onAddMetric={product.product_id ? () => onAddMetric(product.product_id!) : undefined}
+            onDeleteProduct={product.product_id ? () => onDeleteProduct(product.product_id!) : undefined}
+            onDeleteMetric={onDeleteMetric}
+          />
         </div>
       ))}
+      {metadata ? <AddProductCard onAddProduct={onAddProduct} isSaving={structureSaving} /> : null}
     </div>
   );
 }

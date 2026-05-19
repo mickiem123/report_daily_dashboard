@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FIELD_LABELS, NUMERIC_FIELDS, PERCENT_FIELDS } from "@/lib/field-labels";
+import type { MetricDefinition } from "@/lib/product-metadata";
 import type { CellValidation, Mode, Row } from "@/lib/types";
 import { validateCell } from "@/lib/validation";
 
@@ -27,6 +28,7 @@ type DataGridProps = {
   onDeleteRow: (ngay: string) => void;
   hasPendingChanges: boolean;
   isSaving: boolean;
+  editableFields?: MetricDefinition[];
 };
 
 type GridRow = Row & { __isNew: boolean };
@@ -48,19 +50,24 @@ const LARGE_NUMERIC_FIELDS = new Set<keyof Row>([
   "so_du_sfund",
 ]);
 
-function toInputValue(field: keyof Row, value: number | string | null | undefined): string {
+function isPercentField(field: keyof Row, editableFields?: MetricDefinition[]) {
+  const metric = editableFields?.find((item) => item.column_key === field);
+  return metric ? metric.is_percent : PERCENT_FIELDS.has(field);
+}
+
+function toInputValue(field: keyof Row, value: number | string | null | undefined, editableFields?: MetricDefinition[]): string {
   if (value === null || value === undefined) return "";
-  if (typeof value === "number") return PERCENT_FIELDS.has(field) ? String(Number((value * 100).toFixed(4))) : String(value);
+  if (typeof value === "number") return isPercentField(field, editableFields) ? String(Number((value * 100).toFixed(4))) : String(value);
   return value;
 }
 
-function toStoredValue(field: keyof Row, value: string): number | string | null {
+function toStoredValue(field: keyof Row, value: string, editableFields?: MetricDefinition[]): number | string | null {
   if (field === "ngay") return value.trim();
   const raw = value.trim();
   if (raw === "") return null;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed)) return Number.NaN;
-  return PERCENT_FIELDS.has(field) ? parsed / 100 : parsed;
+  return isPercentField(field, editableFields) ? parsed / 100 : parsed;
 }
 
 function getSeverityClass(validation: CellValidation | undefined) {
@@ -69,10 +76,10 @@ function getSeverityClass(validation: CellValidation | undefined) {
   return "";
 }
 
-function getColumnWidthClass(columnId: string) {
+function getColumnWidthClass(columnId: string, editableFields?: MetricDefinition[]) {
   if (columnId === "ngay") return "min-w-[150px]";
   if (columnId === "actions") return "min-w-[64px] w-16";
-  if (PERCENT_FIELDS.has(columnId as keyof Row)) return "min-w-[96px]";
+  if (isPercentField(columnId, editableFields)) return "min-w-[96px]";
   if (LARGE_NUMERIC_FIELDS.has(columnId as keyof Row)) return "min-w-36";
   return "min-w-[104px]";
 }
@@ -94,11 +101,12 @@ function getInputClass(field: keyof Row, validation: CellValidation | undefined)
   ].join(" ");
 }
 
-function hasReadyNewRow(drafts: Record<string, string>) {
+function hasReadyNewRow(drafts: Record<string, string>, editableFields: MetricDefinition[]) {
   const ngay = (drafts[`${NEW_ROW_KEY}:ngay`] ?? "").trim();
   const hasValidDate = validateCell("ngay", ngay, []).severity === "ok";
-  const hasNumeric = NUMERIC_FIELDS.some((numericField) => {
-    const cell = drafts[`${NEW_ROW_KEY}:${numericField}`];
+  const hasNumeric = editableFields.some((numericField) => {
+    const field = numericField.column_key;
+    const cell = drafts[`${NEW_ROW_KEY}:${field}`];
     return cell !== undefined && cell.trim() !== "" && Number.isFinite(Number(cell));
   });
   return hasValidDate && hasNumeric;
@@ -113,11 +121,15 @@ export function DataGrid({
   onDeleteRow,
   hasPendingChanges,
   isSaving,
+  editableFields,
 }: DataGridProps) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [validations, setValidations] = useState<Record<string, CellValidation>>({});
   const [localError, setLocalError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [newRowVersion, setNewRowVersion] = useState(0);
+  const focusedCellKeyRef = useRef<string | null>(null);
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const data = useMemo<GridRow[]>(
     () => [...rows, { ngay: "", __isNew: true } as GridRow],
@@ -126,10 +138,38 @@ export function DataGrid({
 
   const getDraftKey = (row: GridRow, field: keyof Row) => `${row.__isNew ? NEW_ROW_KEY : row.ngay}:${field}`;
 
+  useLayoutEffect(() => {
+    const focusedCellKey = focusedCellKeyRef.current;
+    if (!focusedCellKey) return;
+    const input = inputRefs.current[focusedCellKey];
+    if (input && document.activeElement !== input) {
+      input.focus();
+    }
+  }, [rows]);
+
+  const metricFields = useMemo<MetricDefinition[]>(
+    () =>
+      editableFields ??
+      NUMERIC_FIELDS.map((field, index) => ({
+        id: field,
+        column_key: field,
+        label: FIELD_LABELS[field],
+        unit: PERCENT_FIELDS.has(field) ? "%" : "KH",
+        product_id: "",
+        sub_product_id: null,
+        placement: "normal",
+        sort_order: index,
+        is_visible: true,
+        is_percent: PERCENT_FIELDS.has(field),
+        is_inverse: false,
+      })),
+    [editableFields]
+  );
+
   const commitCell = (row: GridRow, field: keyof Row, rawValue: string) => {
-    if (!row.__isNew && rawValue === toInputValue(field, row[field])) return;
+    if (!row.__isNew && rawValue === toInputValue(field, row[field], metricFields)) return;
     const key = getDraftKey(row, field);
-    const storedValue = toStoredValue(field, rawValue);
+    const storedValue = toStoredValue(field, rawValue, metricFields);
     const history =
       field === "ngay"
         ? []
@@ -159,11 +199,12 @@ export function DataGrid({
     onCellEdit(row.ngay, field, storedValue);
   };
 
-  const newRowReady = hasReadyNewRow(drafts);
+  const newRowReady = hasReadyNewRow(drafts, metricFields);
   const clearNewRowDrafts = () => {
     setDrafts((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => !key.startsWith(`${NEW_ROW_KEY}:`))));
     setValidations((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => !key.startsWith(`${NEW_ROW_KEY}:`))));
     setLocalError(null);
+    setNewRowVersion((current) => current + 1);
   };
 
   const columns: ColumnDef<GridRow>[] = [
@@ -174,21 +215,21 @@ export function DataGrid({
           const item = row.original;
           const field: keyof Row = "ngay";
           const key = getDraftKey(item, field);
-          const value = drafts[key] ?? toInputValue(field, item.ngay);
+          const value = drafts[key] ?? toInputValue(field, item.ngay, metricFields);
           const isExistingRow = !item.__isNew;
-          const inputKey = `${key}:${value}`;
           return (
             <Input
-              key={isExistingRow ? inputKey : undefined}
+              key={item.__isNew ? `${key}:${newRowVersion}` : undefined}
+              ref={(element) => {
+                inputRefs.current[key] = element;
+              }}
               data-testid={`cell-${item.__isNew ? NEW_ROW_KEY : item.ngay}-${field}`}
               type="date"
-              value={item.__isNew ? value : undefined}
-              defaultValue={isExistingRow ? value : undefined}
+              defaultValue={value}
               disabled={isExistingRow}
               className={getInputClass(field, undefined)}
-              onChange={(event) => {
-                const next = event.target.value;
-                setDrafts((prev) => ({ ...prev, [key]: next }));
+              onFocus={() => {
+                focusedCellKeyRef.current = key;
               }}
               onBlur={(event) => commitCell(item, field, event.target.value)}
               onKeyDown={(event) => {
@@ -198,29 +239,28 @@ export function DataGrid({
           );
         },
       },
-      ...NUMERIC_FIELDS.map((field): ColumnDef<GridRow> => ({
+      ...metricFields.map((metric): ColumnDef<GridRow> => {
+        const field = metric.column_key;
+        return {
         accessorKey: field,
-        header: FIELD_LABELS[field],
+        header: metric.label,
         cell: ({ row }) => {
           const item = row.original;
           const key = getDraftKey(item, field);
-          const value = drafts[key] ?? toInputValue(field, item[field]);
-          const isExistingRow = !item.__isNew;
-          const inputKey = `${key}:${value}`;
+          const value = drafts[key] ?? toInputValue(field, item[field], metricFields);
           const validation = validations[key];
           const input = (
             <Input
-              key={isExistingRow ? inputKey : undefined}
+              key={item.__isNew ? `${key}:${newRowVersion}` : undefined}
+              ref={(element) => {
+                inputRefs.current[key] = element;
+              }}
               data-testid={`cell-${item.__isNew ? NEW_ROW_KEY : item.ngay}-${field}`}
               data-severity={validation?.severity}
-              value={item.__isNew ? value : undefined}
-              defaultValue={isExistingRow ? value : undefined}
+              defaultValue={value}
               className={getInputClass(field, validation)}
-              onChange={(event) => {
-                const next = event.target.value;
-                if (item.__isNew) {
-                  setDrafts((prev) => ({ ...prev, [key]: next }));
-                }
+              onFocus={() => {
+                focusedCellKeyRef.current = key;
               }}
               onBlur={(event) => commitCell(item, field, event.target.value)}
               onKeyDown={(event) => {
@@ -231,12 +271,13 @@ export function DataGrid({
           if (validation?.severity !== "warn" && validation?.severity !== "outlier") return input;
           return (
             <Tooltip>
-              <TooltipTrigger>{input}</TooltipTrigger>
+              <TooltipTrigger asChild>{input}</TooltipTrigger>
               <TooltipContent>{validation.message}</TooltipContent>
             </Tooltip>
           );
         },
-      })),
+      };
+      }),
       {
         id: "actions",
         header: "",
@@ -260,6 +301,7 @@ export function DataGrid({
   const table = useReactTable({
     data,
     columns,
+    getRowId: (row) => (row.__isNew ? NEW_ROW_KEY : row.ngay),
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -282,7 +324,7 @@ export function DataGrid({
                       key={header.id}
                       className={[
                         "h-12 border-b border-hairline px-3 text-left text-xs font-medium leading-tight text-ink-mute",
-                        getColumnWidthClass(header.column.id),
+                        getColumnWidthClass(header.column.id, metricFields),
                         getStickyColumnClass(header.column.id),
                       ].join(" ")}
                     >
@@ -300,7 +342,7 @@ export function DataGrid({
                       key={cell.id}
                       className={[
                         "border-b border-hairline px-3 py-1 align-middle",
-                        getColumnWidthClass(cell.column.id),
+                        getColumnWidthClass(cell.column.id, metricFields),
                         getStickyColumnClass(cell.column.id),
                       ].join(" ")}
                     >

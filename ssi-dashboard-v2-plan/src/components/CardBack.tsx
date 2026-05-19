@@ -1,9 +1,11 @@
+import { Trash2 } from "lucide-react";
 import type { ProductCard, Status, SubMetric } from "@/lib/types";
 import { getDeltaStatus } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
 type CardBackProps = {
   product: ProductCard;
+  onDeleteMetric?: (metricId: string) => void;
 };
 
 const textByStatus: Record<Status, string> = {
@@ -12,7 +14,7 @@ const textByStatus: Record<Status, string> = {
   flat: "text-status-flat",
 };
 
-export function CardBack({ product }: CardBackProps) {
+export function CardBack({ product, onDeleteMetric }: CardBackProps) {
   const groups = new Map<string, SubMetric[]>();
   const ungrouped: SubMetric[] = [];
 
@@ -41,10 +43,23 @@ export function CardBack({ product }: CardBackProps) {
               {metrics.map((metric) => {
                 const deltaStatus = getDeltaStatus(metric.delta, metric.inverse);
                 return (
-                  <div key={`${group}-${metric.label}`} className="grid grid-cols-[1.2fr_1fr_auto] items-center gap-3 text-sm">
+                  <div key={`${group}-${metric.label}`} className="grid grid-cols-[1.2fr_1fr_auto_auto] items-center gap-3 text-sm">
                     <span className="truncate text-ink-mute">{metric.label}</span>
                     <span className="font-number truncate text-ink">{metric.value}</span>
                     <span className={cn("font-number", textByStatus[deltaStatus])}>{metric.delta}</span>
+                    {onDeleteMetric && metric.metric_id ? (
+                      <button
+                        type="button"
+                        aria-label={`Xóa metric ${metric.label}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDeleteMetric(metric.metric_id!);
+                        }}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-hairline text-ink-mute hover:text-status-down"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    ) : null}
                   </div>
                 );
               })}
@@ -57,10 +72,23 @@ export function CardBack({ product }: CardBackProps) {
             {ungrouped.map((metric) => {
               const deltaStatus = getDeltaStatus(metric.delta, metric.inverse);
               return (
-                <div key={metric.label} className="grid grid-cols-[1.2fr_1fr_auto] items-center gap-3 text-sm">
+                <div key={metric.label} className="grid grid-cols-[1.2fr_1fr_auto_auto] items-center gap-3 text-sm">
                   <span className="truncate text-ink-mute">{metric.label}</span>
                   <span className="font-number truncate text-ink">{metric.value}</span>
                   <span className={cn("font-number", textByStatus[deltaStatus])}>{metric.delta}</span>
+                  {onDeleteMetric && metric.metric_id ? (
+                    <button
+                      type="button"
+                      aria-label={`Xóa metric ${metric.label}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDeleteMetric(metric.metric_id!);
+                      }}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-hairline text-ink-mute hover:text-status-down"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  ) : null}
                 </div>
               );
             })}
