@@ -19,6 +19,10 @@ function trendEmoji(field: keyof Row, rows: Row[]): string {
   return "➖";
 }
 
+function headlineHistory(field: keyof Row, rows: Row[]): number[] {
+  return metricHistory(field, rows, undefined).slice(-12);
+}
+
 function toSubMetric(
   label: string,
   value: string,
@@ -44,6 +48,7 @@ export function hose(today: Row, prev: Row | null, rows: Row[]): ProductCard {
     headline_label: "Thị Phần HOSE",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("thi_phan_co_so", rows),
     verb: head.verb,
     sub_metrics: [
       toSubMetric(
@@ -86,6 +91,7 @@ export function margin(today: Row, prev: Row | null, rows: Row[]): ProductCard {
     headline_label: "Tổng dư nợ Margin TK6+7",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("tong_du_no_margin", rows),
     verb: head.verb,
     sub_metrics: [
       toSubMetric("SLKH Margin", slkhMargin.valStr, slkhMargin.deltaStr, Math.abs(slkhMargin.pctDelta) > 5),
@@ -128,6 +134,7 @@ export function phaisinh(today: Row, prev: Row | null, rows: Row[]): ProductCard
     headline_label: "Thị Phần Phái Sinh",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("thi_phan_phai_sinh", rows),
     verb: head.verb,
     sub_metrics: [
       toSubMetric(
@@ -168,6 +175,7 @@ export function scash(today: Row, prev: Row | null, rows: Row[]): ProductCard {
     headline_label: "Số dư S-Cash",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("so_du_scash", rows),
     verb: head.verb,
     sub_metrics: [
       toSubMetric("SLKH S-Cash", slkh.valStr, slkh.deltaStr, Math.abs(slkh.pctDelta) > 5),
@@ -187,6 +195,7 @@ export function sfund(today: Row, prev: Row | null, rows: Row[]): ProductCard {
     headline_label: "Số dư S-Fund",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("so_du_sfund", rows),
     verb: head.verb,
     sub_metrics: [toSubMetric("SLKH S-Fund", slkh.valStr, slkh.deltaStr, Math.abs(slkh.pctDelta) > 5)],
   };
@@ -201,6 +210,7 @@ export function momoi(today: Row, prev: Row | null, rows: Row[]): ProductCard {
     headline_label: "KH mở tài khoản mới",
     headline_value: head.valStr,
     headline_delta: head.deltaStr,
+    headline_history: headlineHistory("slkh_mo_moi", rows),
     verb: head.verb,
     sub_metrics: [],
   };

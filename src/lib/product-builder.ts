@@ -21,6 +21,13 @@ function trendEmoji(columnKey: string, rows: Array<Partial<Row>>): string {
   return "➖";
 }
 
+function metricSeries(columnKey: string, rows: Array<Partial<Row>>): number[] {
+  return rows
+    .map((row) => readNumber(row, columnKey))
+    .filter((value): value is number => value !== null)
+    .slice(-12);
+}
+
 function metricToSubMetric(
   metric: MetricDefinition,
   today: Partial<Row>,
@@ -92,6 +99,7 @@ export function buildProductCardsFromMetadata(
         headline_label: headlineMetric?.label ?? "Chưa có headline",
         headline_value: headline.valStr,
         headline_delta: headline.deltaStr,
+        headline_history: headlineMetric ? metricSeries(headlineMetric.column_key, rows) : undefined,
         verb: headline.verb,
         sub_metrics: subMetrics,
       };

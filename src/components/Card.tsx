@@ -25,6 +25,48 @@ const badgeByStatus: Record<Status, string> = {
   flat: "border-hairline bg-canvas-soft text-ink-mute",
 };
 
+const glowByStatus: Record<Status, string> = {
+  up: "drop-shadow(0 0 6px var(--glow-up))",
+  down: "drop-shadow(0 0 6px var(--glow-down))",
+  flat: "none",
+};
+
+function buildSparklinePoints(values: number[], width: number, height: number): string {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const step = values.length > 1 ? width / (values.length - 1) : width;
+
+  return values
+    .map((value, index) => {
+      const x = index * step;
+      const y = height - ((value - min) / range) * height;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(" ");
+}
+
+function HeadlineSparkline({ values, status }: { values?: number[]; status: Status }) {
+  if (!values || values.length < 2) return null;
+
+  const width = 220;
+  const height = 42;
+  const points = buildSparklinePoints(values, width, height);
+
+  return (
+    <svg
+      data-testid="headline-sparkline"
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+      className={cn("mt-3 h-10 w-full overflow-visible", textByStatus[status])}
+      preserveAspectRatio="none"
+      style={{ filter: glowByStatus[status] }}
+    >
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function Card({ product, onFlip, onAddMetric, onDeleteProduct, onDeleteMetric }: CardProps) {
   const status = getStatusFromVerb(product.verb);
   const pinnedMetrics = product.sub_metrics.filter((m) => m.important && m.value !== "N/A").slice(0, 3);
@@ -89,6 +131,7 @@ export function Card({ product, onFlip, onAddMetric, onDeleteProduct, onDeleteMe
         <p className="text-xs uppercase tracking-wide text-ink-mute">{product.headline_label}</p>
         <p className={cn("font-number text-4xl font-semibold leading-[1.15]", textByStatus[status])}>{product.headline_value}</p>
         <p className={cn("font-number text-sm", textByStatus[status])}>{product.headline_delta}</p>
+        <HeadlineSparkline values={product.headline_history} status={status} />
       </div>
 
       <div className="space-y-2">
