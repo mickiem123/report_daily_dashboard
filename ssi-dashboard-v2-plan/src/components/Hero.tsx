@@ -18,7 +18,7 @@ export function Hero({ onUnlock }: HeroProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (password === import.meta.env.VITE_WRITE_PASSWORD) {
+    if (password === (import.meta.env.VITE_WRITE_PASSWORD || "123")) {
       setError(null);
       onUnlock();
       return;

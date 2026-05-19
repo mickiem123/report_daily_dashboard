@@ -80,7 +80,9 @@ describe("DataGrid", () => {
 
     expect(addButton).toBeDisabled();
     fireEvent.change(screen.getByTestId("cell-__new__-ngay"), { target: { value: "2026-05-09" } });
+    fireEvent.blur(screen.getByTestId("cell-__new__-ngay"));
     fireEvent.change(screen.getByTestId("cell-__new__-gtgd_cs_ssi"), { target: { value: "5300" } });
+    fireEvent.blur(screen.getByTestId("cell-__new__-gtgd_cs_ssi"));
     fireEvent.click(addButton);
 
     expect(onAddRow).toHaveBeenCalledTimes(1);
@@ -132,5 +134,53 @@ describe("DataGrid", () => {
 
     expect(input).toHaveValue("7.89");
     expect(document.activeElement).toBe(input);
+  });
+
+  it("keeps focus while editing a cell wrapped by tooltip validation", async () => {
+    const user = userEvent.setup();
+    render(<DataGrid mode="daily" rows={makeRows()} onCellEdit={vi.fn()} onAddRow={vi.fn()} onDeleteRow={vi.fn()} {...defaultProps} />);
+    const input = screen.getByTestId("cell-2026-04-08-gtgd_cs_ssi");
+
+    await user.click(input);
+    await user.clear(input);
+    await user.type(input, "9999999");
+    fireEvent.blur(input);
+
+    const outlierInput = screen.getByTestId("cell-2026-04-08-gtgd_cs_ssi");
+    expect(outlierInput).toHaveAttribute("data-severity", "outlier");
+
+    await user.click(outlierInput);
+    await user.clear(outlierInput);
+    await user.type(outlierInput, "5000");
+
+    expect(outlierInput).toHaveValue("5000");
+    expect(document.activeElement).toBe(outlierInput);
+  });
+
+  it("preserves focused cell when rows prop refreshes with a prepended row", async () => {
+    const user = userEvent.setup();
+    const onCellEdit = vi.fn();
+    const { rerender } = render(
+      <DataGrid mode="daily" rows={makeRows()} onCellEdit={onCellEdit} onAddRow={vi.fn()} onDeleteRow={vi.fn()} {...defaultProps} />
+    );
+    const target = screen.getByTestId("cell-2026-04-08-gtgd_cs_ssi");
+
+    await user.click(target);
+    await user.type(target, "9");
+    expect(document.activeElement).toBe(target);
+
+    const refreshedRows = [
+      {
+        ...makeRows()[0],
+        ngay: "2026-04-01",
+      },
+      ...makeRows(),
+    ];
+    rerender(
+      <DataGrid mode="daily" rows={refreshedRows} onCellEdit={onCellEdit} onAddRow={vi.fn()} onDeleteRow={vi.fn()} {...defaultProps} />
+    );
+
+    const targetAfterRefresh = screen.getByTestId("cell-2026-04-08-gtgd_cs_ssi");
+    expect(document.activeElement).toBe(targetAfterRefresh);
   });
 });

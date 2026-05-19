@@ -1,9 +1,16 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 
+import { sampleDailyRows, sampleMonthlyRows, sampleWeeklyRows } from "@/fixtures/sample-rows";
 import type { Row } from "@/lib/types";
-import { supabase } from "@/data/supabase";
+import { hasSupabaseEnv, supabase } from "@/data/supabase";
 
 const fetchRows = async (table: string): Promise<Row[]> => {
+  if (!hasSupabaseEnv) {
+    if (table === "weekly_metrics") return sampleWeeklyRows;
+    if (table === "monthly_metrics") return sampleMonthlyRows;
+    return sampleDailyRows;
+  }
+
   const { data, error } = await supabase
     .from(table)
     .select("*")

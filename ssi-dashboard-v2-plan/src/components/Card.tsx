@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import type { ProductCard, Status } from "@/lib/types";
 import { getDeltaStatus, getStatusFromVerb } from "@/lib/status";
 import { cn } from "@/lib/utils";
@@ -7,6 +8,9 @@ import { CardBack } from "@/components/CardBack";
 type CardProps = {
   product: ProductCard;
   onFlip?: () => void;
+  onAddMetric?: () => void;
+  onDeleteProduct?: () => void;
+  onDeleteMetric?: (metricId: string) => void;
 };
 
 const textByStatus: Record<Status, string> = {
@@ -21,7 +25,7 @@ const badgeByStatus: Record<Status, string> = {
   flat: "border-hairline bg-canvas-soft text-ink-mute",
 };
 
-export function Card({ product, onFlip }: CardProps) {
+export function Card({ product, onFlip, onAddMetric, onDeleteProduct, onDeleteMetric }: CardProps) {
   const status = getStatusFromVerb(product.verb);
   const pinnedMetrics = product.sub_metrics.filter((m) => m.important && m.value !== "N/A").slice(0, 3);
   const [expanded, setExpanded] = useState(false);
@@ -50,7 +54,35 @@ export function Card({ product, onFlip }: CardProps) {
           <span className="text-lg leading-none">{product.trend_emoji}</span>
           <h3 className="text-lg font-medium leading-[1.2] text-ink">{product.name}</h3>
         </div>
-        <span className={cn("rounded-full border px-2 py-1 text-xs font-medium", badgeByStatus[status])}>{product.verb}</span>
+        <div className="flex items-center gap-1">
+          <span className={cn("rounded-full border px-2 py-1 text-xs font-medium", badgeByStatus[status])}>{product.verb}</span>
+          {onAddMetric ? (
+            <button
+              type="button"
+              aria-label={`Thêm metric cho ${product.name}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onAddMetric();
+              }}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-hairline text-ink-mute hover:text-ink"
+            >
+              <Plus size={14} />
+            </button>
+          ) : null}
+          {onDeleteProduct ? (
+            <button
+              type="button"
+              aria-label={`Xóa card ${product.name}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDeleteProduct();
+              }}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-hairline text-ink-mute hover:text-status-down"
+            >
+              <Trash2 size={14} />
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="mb-5">
@@ -75,14 +107,20 @@ export function Card({ product, onFlip }: CardProps) {
   );
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       data-status={status}
       data-flipped={expanded}
       data-expanded={expanded}
       aria-pressed={expanded}
       aria-expanded={expanded}
       onClick={handleFlip}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        handleFlip();
+      }}
       className={cn(
         "relative h-full min-h-[312px] w-full overflow-hidden rounded-xl border border-hairline bg-canvas text-left shadow-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         reducedMotion ? "" : "transition-all duration-200 hover:-translate-y-1"
@@ -103,9 +141,9 @@ export function Card({ product, onFlip }: CardProps) {
           )}
           aria-hidden={!expanded}
         >
-          {expanded ? <CardBack product={product} /> : null}
+          {expanded ? <CardBack product={product} onDeleteMetric={onDeleteMetric} /> : null}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
