@@ -1,0 +1,163 @@
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+@import "@fontsource/inter/vietnamese-400.css";
+@import "@fontsource/inter/vietnamese-500.css";
+@import "@fontsource/inter/vietnamese-600.css";
+@import "@fontsource/inter/vietnamese-700.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: #0b0f0c;
+  --canvas-soft: #111512;
+  --canvas-night: #1c1c1c;
+  --canvas-night-soft: #202020;
+  --ink: #f5f7f6;
+  --ink-secondary: #e7ebe8;
+  --ink-mute: #9aa29d;
+  --ink-mute-2: #7f8782;
+  --ink-faint: #6a726d;
+  --hairline: #2a302c;
+  --hairline-strong: #3a413c;
+  --hairline-cool: #1f2521;
+  --primary: #3ecf8e;
+  --primary-deep: #24b47e;
+  --primary-soft: #4ade80;
+  --on-primary: #171717;
+  --on-dark: #ffffff;
+  --bg-base: var(--canvas);
+  --bg-elev: #111512;
+  --text-primary: var(--ink);
+  --text-muted: var(--ink-mute);
+  --border-glass: var(--hairline);
+  --accent-teal: var(--primary);
+  --accent-emerald: var(--primary-soft);
+  --accent-cyan: var(--primary-deep);
+  --status-up: #24b47e;
+  --status-down: #f87171;
+  --status-flat: var(--ink-mute);
+  --glow-up: rgba(62, 207, 142, 0.2);
+  --glow-down: rgba(248, 113, 113, 0.18);
+  --grid-line: rgba(255, 255, 255, 0.045);
+}
+
+:root[data-theme="light"] {
+  --canvas: #ffffff;
+  --canvas-soft: #fafafa;
+  --canvas-night: #1c1c1c;
+  --canvas-night-soft: #202020;
+  --ink: #171717;
+  --ink-secondary: #212121;
+  --ink-mute: #707070;
+  --ink-mute-2: #9a9a9a;
+  --ink-faint: #b2b2b2;
+  --hairline: #dfdfdf;
+  --hairline-strong: #c7c7c7;
+  --hairline-cool: #ededed;
+  --primary: #3ecf8e;
+  --primary-deep: #24b47e;
+  --primary-soft: #4ade80;
+  --on-primary: #171717;
+  --on-dark: #ffffff;
+  --bg-base: var(--canvas);
+  --bg-elev: var(--canvas);
+  --text-primary: var(--ink);
+  --text-muted: var(--ink-mute);
+  --border-glass: var(--hairline);
+  --accent-teal: var(--primary);
+  --accent-emerald: var(--primary-soft);
+  --accent-cyan: var(--primary-deep);
+  --status-up: #24b47e;
+  --status-down: #dc2626;
+  --status-flat: var(--ink-mute);
+  --glow-up: rgba(36, 180, 126, 0.12);
+  --glow-down: rgba(220, 38, 38, 0.12);
+  --grid-line: rgba(23, 23, 23, 0.035);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-feature-settings:
+    "cv02" 1,
+    "cv03" 1,
+    "cv04" 1,
+    "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+::selection {
+  background: rgba(62, 207, 142, 0.32);
+  color: var(--text-primary);
+}
+
+@layer utilities {
+  .font-number {
+    font-family:
+      "Geist Mono",
+      ui-monospace,
+      Menlo,
+      Monaco,
+      Consolas,
+      "Liberation Mono",
+      monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bg-supabase-grid {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  @keyframes drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(16px, -14px, 0);
+    }
+  }
+
+  @keyframes drift-alt {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-14px, 12px, 0);
+    }
+  }
+
+  .bg-drift-slow {
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+
+  .bg-drift-reverse {
+    animation: drift-alt 28s ease-in-out infinite alternate;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-drift-slow,
+  .bg-drift-reverse {
+    animation: none;
+  }
+}
